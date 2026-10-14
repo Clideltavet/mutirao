@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import PatientRecordModal from '../../components/PatientRecordModal'
-import { clearTabletSession, getTabletSession } from '../../components/authUtils'
+import { clearTabletSession, getTabletSession, logoutApi } from '../../components/authUtils'
 
 function readPatients() {
   try {
@@ -79,7 +79,8 @@ export default function ReceptionPage() {
             <strong>{session?.name || 'Recepção'}</strong>
           </div>
           <button
-            onClick={() => {
+            onClick={async () => {
+              await logoutApi()
               clearTabletSession()
               router.replace('/')
             }}

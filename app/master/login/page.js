@@ -1,18 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { getAdminSession, hashPassword, setAdminSession } from '../../../components/authUtils'
-
-const DEFAULT_USER = 'admin'
-const DEFAULT_PASS = 'DeltaVet@2026'
-
-async function ensureAdmin() {
-  const raw = localStorage.getItem('deltaVetAdminCredentials')
-  if (raw) return JSON.parse(raw)
-  const data = { username: DEFAULT_USER, passwordHash: await hashPassword(DEFAULT_PASS) }
-  localStorage.setItem('deltaVetAdminCredentials', JSON.stringify(data))
-  return data
-}
+import { loginApi, meApi, setAdminSession } from '../../../components/authUtils'
 
 export default function MasterLogin() {
   const router = useRouter()
@@ -20,16 +9,24 @@ export default function MasterLogin() {
   const [password,setPassword] = useState('')
   const [error,setError] = useState('')
 
-  useEffect(() => { if (getAdminSession()) router.replace('/master'); ensureAdmin() }, [router])
+  useEffect(() => {
+    meApi().then(user => {
+      if (user?.accesses?.includes('MASTER')) {
+        setAdminSession(user)
+        router.replace('/master')
+      }
+    })
+  }, [router])
 
   async function login() {
-    const credentials = await ensureAdmin()
-    const hash = await hashPassword(password)
-    if (username.trim().toLowerCase() !== credentials.username.toLowerCase() || hash !== credentials.passwordHash) {
-      return setError('Usuário ou senha do administrador inválidos.')
+    setError('')
+    try {
+      const user = await loginApi(username, password, 'MASTER')
+      setAdminSession(user)
+      router.replace('/master')
+    } catch (error) {
+      setError(error.message || 'Usuário ou senha do administrador inválidos.')
     }
-    setAdminSession({ username: credentials.username, loggedAt: new Date().toISOString() })
-    router.replace('/master')
   }
 
   return (

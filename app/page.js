@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { clearTabletSession, getTabletSession, hashPassword, setTabletSession } from '../components/authUtils'
+import { clearTabletSession, getTabletSession, loginApi, logoutApi, meApi, setTabletSession } from '../components/authUtils'
 
 function readJSON(key, fallback=[]) {
   try { const v = JSON.parse(localStorage.getItem(key) || 'null'); return v ?? fallback } catch { return fallback }
@@ -22,15 +22,26 @@ export default function Home() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const currentSession = getTabletSession()
-    setSession(currentSession)
+    const localSession = getTabletSession()
+    setSession(localSession)
 
-    if (
-      currentSession?.accesses?.length === 1 &&
-      currentSession.accesses.includes('RECEPCAO')
-    ) {
-      router.replace('/recepcao')
-    }
+    meApi().then(currentSession => {
+      if (!currentSession) {
+        clearTabletSession()
+        setSession(null)
+        return
+      }
+
+      setTabletSession(currentSession)
+      setSession(currentSession)
+
+      if (
+        currentSession?.accesses?.length === 1 &&
+        currentSession.accesses.includes('RECEPCAO')
+      ) {
+        router.replace('/recepcao')
+      }
+    })
     const refresh = () => setPatients(readJSON('deltaVetPatients', []))
     refresh()
     const timer = setInterval(refresh, 1000)
@@ -43,20 +54,22 @@ export default function Home() {
   }, [patients])
 
   async function login() {
-    const employees = readJSON('deltaVetEmployees', [])
-    const employee = employees.find(e => e.active !== false && e.username?.toLowerCase() === username.trim().toLowerCase())
-    if (!employee?.passwordHash) return setError('Usuário ou senha inválidos.')
-    const hash = await hashPassword(password)
-    if (hash !== employee.passwordHash) return setError('Usuário ou senha inválidos.')
-    const s = { id: employee.id, name: employee.name, username: employee.username, accesses: employee.accesses || [] }
-    setTabletSession(s); setSession(s); setError(''); setPassword('')
+    setError('')
+    try {
+      const user = await loginApi(username, password)
+      setTabletSession(user)
+      setSession(user)
+      setPassword('')
 
-    if (s.accesses?.length === 1 && s.accesses.includes('RECEPCAO')) {
-      router.replace('/recepcao')
+      if (user.accesses?.length === 1 && user.accesses.includes('RECEPCAO')) {
+        router.replace('/recepcao')
+      }
+    } catch (error) {
+      setError(error.message || 'Usuário ou senha inválidos.')
     }
   }
 
-  function logout() { clearTabletSession(); setSession(null) }
+  async function logout() { await logoutApi(); clearTabletSession(); setSession(null) }
 
   if (!session) {
     return (

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { clearAdminSession } from '../../components/authUtils'
+import { clearAdminSession, logoutApi } from '../../components/authUtils'
 
 function readPatients() {
   try {
