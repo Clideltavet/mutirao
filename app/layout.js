@@ -1,5 +1,6 @@
 import './globals.css'
 import AppAccessGate from '../components/AppAccessGate'
+import SharedDataSync from '../components/SharedDataSync'
 
 export const metadata = {
   title: 'Controle Delta Vet',
@@ -9,7 +10,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="pt-BR">
-      <body><AppAccessGate>{children}</AppAccessGate></body>
+      <body><SharedDataSync /><AppAccessGate>{children}</AppAccessGate></body>
     </html>
   )
 }

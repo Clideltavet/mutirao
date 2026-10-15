@@ -17,13 +17,16 @@ export function normalizeProcedureCatalog(items) {
         id: `legacy-${index}-${item.toLowerCase().replace(/[^a-z0-9]+/gi, '-')}`,
         name: item,
         value: 0,
+        _syncUpdatedAt: new Date().toISOString(),
       }
     }
 
     return {
+      ...item,
       id: item.id || `proc-${index}-${Date.now()}`,
       name: String(item.name || '').trim(),
       value: Number(item.value) || 0,
+      _syncUpdatedAt: item._syncUpdatedAt || item.updatedAt || new Date().toISOString(),
     }
   }).filter(item => item.name)
 }

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { clearTabletSession, getTabletSession, loginApi, logoutApi, meApi, setTabletSession } from '../components/authUtils'
+import SyncStatus from '../components/SyncStatus'
 
 function readJSON(key, fallback=[]) {
   try { const v = JSON.parse(localStorage.getItem(key) || 'null'); return v ?? fallback } catch { return fallback }
@@ -173,6 +174,7 @@ export default function Home() {
                 RECEPÇÃO
               </button>
             )}
+            <SyncStatus />
             <div className="tablet-mini-status">
               <span className="tablet-mini-dot" />
               SISTEMA ATIVO

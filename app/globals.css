@@ -3587,3 +3587,35 @@
     font-size: clamp(38px, 9vw, 56px) !important;
   }
 }
+
+
+/* ===== v1.17 - sincronização Neon compartilhada ===== */
+.delta-sync-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 0 11px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+
+.delta-sync-pill.is-synced {
+  background: #e6f7ee;
+  color: #177644;
+}
+
+.delta-sync-pill.is-local {
+  background: #fff0c9;
+  color: #805e00;
+}
+
+.delta-sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}

@@ -39,6 +39,7 @@ export default function DischargeModal({ patient, onClose, onSaved }) {
       ...p,
       dischargeStatus: 'ALTA',
       dischargedAt: at,
+            _syncUpdatedAt: at,
       dischargeVeterinarian: vet,
       dischargeNotes: notes.trim(),
       timeline: [

@@ -62,6 +62,7 @@ export default function SurgeryConfirmModal({ patient, onClose, onSaved }) {
             surgeryExtras: selectedExtras,
             surgeryNotes: surgeryNotes.trim(),
             confirmedAt: at,
+            _syncUpdatedAt: at,
             timeline: [
               ...(Array.isArray(item.timeline) ? item.timeline : []),
               { type: 'CIRURGIA_CONFIRMADA', at, veterinarian: vet || '', notes: surgeryNotes.trim(), actor },

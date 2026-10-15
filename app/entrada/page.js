@@ -166,6 +166,7 @@ export default function EntradaPage() {
       surgeryExtras: [],
       confirmedAt: null,
       createdAt,
+      _syncUpdatedAt: createdAt,
       createdBy: actor,
       updatedAt: null,
       timeline: [

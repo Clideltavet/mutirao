@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { clearAdminSession, logoutApi } from '../../components/authUtils'
+import SyncStatus from '../../components/SyncStatus'
 
 function readPatients() {
   try {
@@ -79,6 +80,7 @@ export default function MasterPage() {
         </div>
 
         <div className="cms-dashboard-hero-actions">
+                  <SyncStatus />
           <button
             className="cms-dashboard-system-button"
             onClick={() => router.push('/')}

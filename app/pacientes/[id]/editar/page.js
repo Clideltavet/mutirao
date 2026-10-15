@@ -42,6 +42,7 @@ export default function EditPatientPage() {
       totalValue: procedureDetailsForNames(p.procedures.filter(Boolean), procedureOptions)
         .reduce((sum, item) => sum + (Number(item.value) || 0), 0),
       updatedAt: at,
+      _syncUpdatedAt: at,
       updatedBy: actor,
       timeline: [
         ...(Array.isArray(x.timeline) ? x.timeline : []),

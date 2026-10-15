@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import ClientModal from '../../../../components/ClientModal'
 import { buildClientsFromPatients, readClients, saveClients } from '../../../../components/clientUtils'
 import { auditAction } from '../../../../components/auditUtils'
+import { clientRecordKey, queueSyncDelete } from '../../../../components/syncUtils'
 
 function readPatients() {
   try {

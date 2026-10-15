@@ -1,81 +1,103 @@
-# Controle Delta Vet v1.16 — Neon: usuários e login
+# Controle Delta Vet v1.17 — dados compartilhados no Neon
 
-Esta versão inicia a migração definitiva para o Neon.
+Esta versão corrige o problema de entradas feitas em um aparelho não aparecerem nos outros.
 
-## O que já foi para o Neon nesta versão
+## Agora ficam compartilhados no Neon
 
-- usuários;
-- senhas;
-- funções;
-- permissões;
-- sessões de login.
-
-As senhas NÃO são gravadas em texto puro.
-O servidor usa hash `scrypt` com salt individual.
-
-A sessão é mantida por cookie HTTP-only e também validada no servidor.
-
-## O que ainda permanece local nesta etapa
-
-- pacientes;
-- tutores/clientes;
+- pacientes / entradas;
+- clientes / tutores;
 - procedimentos e valores;
-- relatórios operacionais;
+- cirurgia e status do paciente;
+- alta;
+- entrega;
+- observações;
 - auditoria;
-- numeração.
+- próxima numeração de ficha.
 
-Esses módulos serão migrados depois da validação do login no Neon.
+Usuários, senhas, funções e permissões já estavam no Neon desde a v1.16.
 
-## Configuração
+## MUITO IMPORTANTE — os dados antigos não são apagados
 
-1. No Neon, abra seu projeto.
-2. Clique em Connect e copie a conexão PostgreSQL (preferencialmente Pooled).
-3. Na raiz do projeto crie `.env.local`:
+A v1.17 foi feita para importar automaticamente o que já estava salvo no navegador.
 
-DATABASE_URL="postgresql://..."
-ADMIN_USER="admin"
-ADMIN_PASSWORD="SUA_SENHA_FORTE"
-ADMIN_NAME="Administrador Delta Vet"
+A primeira sincronização segue esta ordem:
 
-4. Instale as dependências:
+1. lê os registros que já existem naquele computador/tablet;
+2. envia esses registros primeiro para o Neon;
+3. o Neon mescla os dados sem duplicar;
+4. somente depois o dispositivo recebe o banco compartilhado.
+
+Ou seja: o sistema NÃO baixa um banco vazio por cima das entradas antigas.
+
+### Para preservar as entradas que a cliente já fez
+
+Depois de publicar a v1.17:
+
+1. NÃO limpe cache, dados do site ou localStorage;
+2. abra primeiro o sistema NO MESMO computador e NO MESMO navegador em que as entradas foram cadastradas;
+3. espere aparecer `NEON SINCRONIZADO`;
+4. confira se os pacientes continuam aparecendo;
+5. só depois abra o tablet.
+
+Nesse momento, o tablet passa a baixar os mesmos registros do Neon.
+
+## Sincronização entre aparelhos
+
+A sincronização ocorre automaticamente aproximadamente a cada 1,8 segundo.
+
+Exemplo:
+
+PC / Recepção
+→ cadastra animal
+→ Neon
+→ Tablet
+→ TV da cirurgia
+→ CMS / Relatórios
+
+Se a internet cair:
+- o aparelho continua mantendo os dados localmente;
+- quando a conexão retorna, tenta sincronizar novamente.
+
+## Proteção contra duplicidade
+
+Pacientes antigos usam:
+- número da ficha;
+- data/hora original de criação.
+
+Clientes, procedimentos e auditoria usam suas próprias chaves.
+
+## Exclusões
+
+Exclusões de clientes e procedimentos também são enviadas ao Neon.
+
+## Atualização do banco
+
+Depois de atualizar da v1.16 para a v1.17, rode novamente:
 
 npm install
-
-5. Crie as tabelas e o usuário administrador:
-
 npm run db:init
 
-6. Abra:
+O `db:init` usa `CREATE TABLE IF NOT EXISTS`, portanto NÃO apaga usuários ou tabelas já existentes.
 
-npm run dev
+Ele adiciona:
 
-## Login
-
-O usuário inicial será o valor definido em `ADMIN_USER`.
-A senha inicial será o valor definido em `ADMIN_PASSWORD`.
-
-Depois, entre no CMS e cadastre os demais usuários em:
-
-Painel CMS → Cadastros → Funcionários / Acessos
+- `shared_records`
+- `system_state`
 
 ## Vercel
 
-Adicione também no projeto da Vercel:
+A variável abaixo continua obrigatória:
 
 DATABASE_URL
 
-Depois faça novo deploy.
+Depois do novo deploy, faça primeiro a migração no navegador que contém os registros antigos.
 
-`ADMIN_USER` e `ADMIN_PASSWORD` são necessários para o `npm run db:init`,
-não precisam ficar na Vercel depois que o admin já foi criado.
+## Indicador de sincronização
 
-## Segurança
+O sistema mostra:
 
-- senha com scrypt + salt;
-- sessão aleatória salva no banco;
-- cookie HTTP-only;
-- usuários inativos perdem o acesso;
-- troca de senha encerra as sessões do usuário;
-- permissões são verificadas também nas APIs administrativas.
+- `NEON SINCRONIZADO` → banco online atualizado;
+- `SINCRONIZANDO...` → aguardando primeira sincronização;
+- `MODO LOCAL` → dispositivo está sem internet.
 
-Versão: 1.16.0
+Versão: 1.17.0

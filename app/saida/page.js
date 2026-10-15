@@ -88,6 +88,7 @@ export default function SaidaPage() {
         ? {
             ...p,
             ...patch,
+            _syncUpdatedAt: event.at || new Date().toISOString(),
             timeline: [
               ...(Array.isArray(p.timeline) ? p.timeline : []),
               timelineEvent,

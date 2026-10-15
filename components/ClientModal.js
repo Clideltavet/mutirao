@@ -34,6 +34,7 @@ export default function ClientModal({ client, onClose, onSave }) {
       email: normalizeEmail(email),
       createdAt: client?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      _syncUpdatedAt: new Date().toISOString(),
     }
 
     onSave(data)

@@ -9,6 +9,7 @@ import {
   readProcedureCatalog,
   saveProcedureCatalog,
 } from '../../../../components/procedureUtils'
+import { procedureRecordKey, queueSyncDelete } from '../../../../components/syncUtils'
 
 export default function ProceduresPage() {
   const router = useRouter()
@@ -40,6 +41,7 @@ export default function ProceduresPage() {
         id: `proc-${Date.now()}`,
         name: cleanName,
         value: moneyToNumber(value),
+        _syncUpdatedAt: new Date().toISOString(),
       }
     ])
 
@@ -59,13 +61,15 @@ export default function ProceduresPage() {
 
     persist(items.map(current =>
       current.id === item.id
-        ? { ...current, name: cleanName, value: moneyToNumber(editValue) }
+        ? { ...current, name: cleanName, value: moneyToNumber(editValue), _syncUpdatedAt: new Date().toISOString() }
         : current
     ))
     setEditing(null)
   }
 
   function remove(id) {
+    const item = items.find(current => current.id === id)
+    if (item) queueSyncDelete('procedures', procedureRecordKey(item))
     persist(items.filter(item => item.id !== id))
   }
 

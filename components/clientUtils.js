@@ -24,7 +24,15 @@ export function readClients() {
 }
 
 export function saveClients(clients) {
-  localStorage.setItem('deltaVetClients', JSON.stringify(clients))
+  const next = (Array.isArray(clients) ? clients : []).map(client => ({
+    ...client,
+    _syncUpdatedAt:
+      client._syncUpdatedAt ||
+      client.updatedAt ||
+      client.createdAt ||
+      new Date().toISOString(),
+  }))
+  localStorage.setItem('deltaVetClients', JSON.stringify(next))
 }
 
 export function buildClientsFromPatients() {

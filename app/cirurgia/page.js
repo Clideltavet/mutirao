@@ -160,6 +160,7 @@ export default function CirurgiaPage() {
             surgeryNotes: surgeryNotes.trim(),
             status: 'CONFIRMADO',
             confirmedAt: at,
+            _syncUpdatedAt: at,
             timeline: [
               ...(Array.isArray(patient.timeline) ? patient.timeline : []),
               {

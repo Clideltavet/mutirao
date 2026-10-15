@@ -102,6 +102,31 @@ await sql`
 await sql`CREATE INDEX IF NOT EXISTS sessions_token_hash_idx ON sessions(token_hash)`
 await sql`CREATE INDEX IF NOT EXISTS sessions_expires_at_idx ON sessions(expires_at)`
 
+
+await sql`
+  CREATE TABLE IF NOT EXISTS shared_records (
+    kind TEXT NOT NULL,
+    record_key TEXT NOT NULL,
+    payload JSONB NOT NULL,
+    version_time TIMESTAMPTZ NOT NULL,
+    server_updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (kind, record_key)
+  )
+`
+
+await sql`
+  CREATE INDEX IF NOT EXISTS shared_records_kind_idx
+  ON shared_records(kind)
+`
+
+await sql`
+  CREATE TABLE IF NOT EXISTS system_state (
+    key TEXT PRIMARY KEY,
+    value JSONB NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )
+`
+
 for (const role of roles) {
   await sql`
     INSERT INTO roles (id, name, description, accesses)
