@@ -274,6 +274,7 @@ export default function EntradaPage() {
               >
                 <option value="">Selecione um cliente cadastrado...</option>
                 {clients
+                  .filter(client => !client.archived)
                   .slice()
                   .sort((a,b) => a.name.localeCompare(b.name, 'pt-BR'))
                   .map(client => (

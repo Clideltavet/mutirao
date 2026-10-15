@@ -83,8 +83,30 @@ async function upsertItems(sql, inputName, items) {
     const key = def.key(item)
     if (!key) continue
 
-    const version = recordVersion(def.kind, item).toISOString()
+    const versionDate = recordVersion(def.kind, item)
+    const version = versionDate.toISOString()
     const payload = JSON.stringify(item)
+
+    const tombstones = await sql`
+      SELECT deleted_at
+      FROM shared_tombstones
+      WHERE kind = ${def.kind}
+        AND record_key = ${key}
+      LIMIT 1
+    `
+
+    if (tombstones.length) {
+      const deletedAt = new Date(tombstones[0].deleted_at)
+      if (!Number.isNaN(deletedAt.getTime()) && deletedAt >= versionDate) {
+        continue
+      }
+
+      await sql`
+        DELETE FROM shared_tombstones
+        WHERE kind = ${def.kind}
+          AND record_key = ${key}
+      `
+    }
 
     await sql`
       INSERT INTO shared_records (kind, record_key, payload, version_time, server_updated_at)
@@ -108,9 +130,20 @@ async function applyDeletions(sql, deletions) {
     const key = String(deletion?.recordKey || '')
     if (!allowed.has(kind) || !key) continue
 
+    const deletedAt = validDate(deletion?.at) || new Date()
+
+    await sql`
+      INSERT INTO shared_tombstones (kind, record_key, deleted_at)
+      VALUES (${kind}, ${key}, ${deletedAt.toISOString()})
+      ON CONFLICT (kind, record_key)
+      DO UPDATE SET deleted_at = GREATEST(shared_tombstones.deleted_at, EXCLUDED.deleted_at)
+    `
+
     await sql`
       DELETE FROM shared_records
-      WHERE kind = ${kind} AND record_key = ${key}
+      WHERE kind = ${kind}
+        AND record_key = ${key}
+        AND version_time <= ${deletedAt.toISOString()}
     `
   }
 }

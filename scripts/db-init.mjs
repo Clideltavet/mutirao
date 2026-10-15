@@ -127,6 +127,21 @@ await sql`
   )
 `
 
+
+await sql`
+  CREATE TABLE IF NOT EXISTS shared_tombstones (
+    kind TEXT NOT NULL,
+    record_key TEXT NOT NULL,
+    deleted_at TIMESTAMPTZ NOT NULL,
+    PRIMARY KEY (kind, record_key)
+  )
+`
+
+await sql`
+  CREATE INDEX IF NOT EXISTS shared_tombstones_kind_idx
+  ON shared_tombstones(kind)
+`
+
 for (const role of roles) {
   await sql`
     INSERT INTO roles (id, name, description, accesses)

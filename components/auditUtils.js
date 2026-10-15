@@ -8,6 +8,10 @@ export const AUDIT_LABELS = {
   REINTERNADO_APOS_ENTREGA: 'Paciente reinternado após entrega',
   CLIENTE_CADASTRADO: 'Cliente cadastrado',
   CLIENTE_EDITADO: 'Cliente editado',
+  CLIENTE_ARQUIVADO: 'Cliente arquivado',
+  CLIENTE_REATIVADO: 'Cliente reativado',
+  CLIENTE_EXCLUIDO: 'Cliente excluído',
+  REGISTRO_TESTE_EXCLUIDO: 'Registro de teste excluído',
 }
 
 export function readAuditLog() {

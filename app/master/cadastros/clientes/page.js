@@ -38,13 +38,18 @@ export default function ClientsPage() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    if (!q) return clients
 
-    return clients.filter(client =>
-      `${client.name} ${client.phone} ${client.cpf} ${client.email}`
-        .toLowerCase()
-        .includes(q)
-    )
+    return clients
+      .filter(client => {
+        if (!q) return true
+        return `${client.name} ${client.phone} ${client.cpf} ${client.email}`
+          .toLowerCase()
+          .includes(q)
+      })
+      .sort((a,b) => {
+        if (!!a.archived !== !!b.archived) return a.archived ? 1 : -1
+        return String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR')
+      })
   }, [clients, query])
 
   function saveClient(client) {
@@ -68,18 +73,81 @@ export default function ClientsPage() {
     setShowModal(false)
   }
 
-  function removeClient(id) {
-    const next = clients.filter(item => item.id !== id)
+  function persistClients(next) {
     saveClients(next)
+    setClients(next)
+  }
 
+  function archiveClient(client) {
+    const linked = countAnimals(client)
+    if (!window.confirm(
+      linked
+        ? `Este tutor possui ${linked} registro(s) de animal vinculado(s). Arquivar o tutor mantém todo o histórico. Deseja continuar?`
+        : 'Arquivar este tutor?'
+    )) return
+
+    const at = new Date().toISOString()
+    const next = clients.map(item =>
+      item.id === client.id
+        ? { ...item, archived: true, archivedAt: at, updatedAt: at, _syncUpdatedAt: at }
+        : item
+    )
+
+    persistClients(next)
     auditAction({
-      action: exists ? 'CLIENTE_EDITADO' : 'CLIENTE_CADASTRADO',
+      action: 'CLIENTE_ARQUIVADO',
       category: 'CLIENTE',
-      details: `${exists ? 'Cliente editado' : 'Cliente cadastrado'} no CMS: ${client.name || '-'}`,
+      details: `Tutor arquivado: ${client.name || '-'} • ${linked} registro(s) vinculado(s)`,
+      metadata: { clientId: client.id, clientName: client.name || '', linkedPatients: linked },
+    })
+  }
+
+  function reactivateClient(client) {
+    const at = new Date().toISOString()
+    const next = clients.map(item =>
+      item.id === client.id
+        ? { ...item, archived: false, archivedAt: null, updatedAt: at, _syncUpdatedAt: at }
+        : item
+    )
+
+    persistClients(next)
+    auditAction({
+      action: 'CLIENTE_REATIVADO',
+      category: 'CLIENTE',
+      details: `Tutor reativado: ${client.name || '-'}`,
       metadata: { clientId: client.id, clientName: client.name || '' },
     })
+  }
 
-    setClients(next)
+  function removeClient(client) {
+    const linked = countAnimals(client)
+
+    if (linked > 0) {
+      const first = window.confirm(
+        `ATENÇÃO: ${client.name} possui ${linked} registro(s) de animal vinculado(s).
+
+Excluir o cadastro do tutor NÃO apagará esses animais nem o histórico.
+
+Deseja continuar?`
+      )
+      if (!first) return
+
+      const confirmation = window.prompt('Para excluir somente o cadastro do tutor, digite EXCLUIR:')
+      if (String(confirmation || '').trim().toUpperCase() !== 'EXCLUIR') return
+    } else {
+      if (!window.confirm(`Excluir o tutor ${client.name}?`)) return
+    }
+
+    queueSyncDelete('clients', clientRecordKey(client))
+    const next = clients.filter(item => item.id !== client.id)
+    persistClients(next)
+
+    auditAction({
+      action: 'CLIENTE_EXCLUIDO',
+      category: 'CLIENTE',
+      details: `Cadastro do tutor excluído: ${client.name || '-'} • histórico dos animais preservado • ${linked} registro(s) vinculado(s)`,
+      metadata: { clientId: client.id, clientName: client.name || '', linkedPatients: linked },
+    })
   }
 
   function countAnimals(client) {
@@ -141,28 +209,49 @@ export default function ClientsPage() {
             <tbody>
               {filtered.length ? filtered.map(client => (
                 <tr key={client.id}>
-                  <td><strong>{client.name}</strong></td>
+                  <td>
+                    <strong>{client.name}</strong>
+                    {client.archived && <span className="client-archived-badge">ARQUIVADO</span>}
+                  </td>
                   <td>{client.phone || '-'}</td>
                   <td>{client.cpf || '-'}</td>
                   <td>{client.email || '-'}</td>
                   <td>{countAnimals(client)}</td>
                   <td>
                     <div className="client-row-actions">
-                      <button
-                        className="client-edit-button"
-                        onClick={() => {
-                          setEditing(client)
-                          setShowModal(true)
-                        }}
-                      >
-                        EDITAR
-                      </button>
+                      {!client.archived && (
+                        <button
+                          className="client-edit-button"
+                          onClick={() => {
+                            setEditing(client)
+                            setShowModal(true)
+                          }}
+                        >
+                          EDITAR
+                        </button>
+                      )}
+
+                      {client.archived ? (
+                        <button
+                          className="client-reactivate-button"
+                          onClick={() => reactivateClient(client)}
+                        >
+                          REATIVAR
+                        </button>
+                      ) : countAnimals(client) > 0 ? (
+                        <button
+                          className="client-archive-button"
+                          onClick={() => archiveClient(client)}
+                        >
+                          ARQUIVAR
+                        </button>
+                      ) : null}
 
                       <button
                         className="client-delete-button"
-                        onClick={() => removeClient(client.id)}
+                        onClick={() => removeClient(client)}
                       >
-                        EXCLUIR
+                        {countAnimals(client) > 0 ? 'EXCLUIR CADASTRO' : 'EXCLUIR'}
                       </button>
                     </div>
                   </td>

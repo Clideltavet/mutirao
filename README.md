@@ -1,69 +1,67 @@
-# Controle Delta Vet v1.17.1 — correção da numeração das fichas
+# Controle Delta Vet v1.17.2 — exclusão segura de testes
 
-Esta versão corrige o problema de o sistema pular números de ficha depois da sincronização entre aparelhos.
+## Clientes / Tutores
 
-## O que causava o problema
+No CMS → Cadastros → Clientes / Tutores:
 
-Cada aparelho possuía um valor local chamado `deltaVetNextPatientNumber`.
+### Tutor sem animais vinculados
+Pode ser excluído normalmente.
 
-Na v1.17, durante a primeira sincronização, o Neon aceitava o MAIOR valor encontrado entre:
-- número local do PC;
-- número local do tablet;
-- número salvo no Neon;
-- maior ficha existente + 1.
+### Tutor com animais vinculados
+O sistema mostra proteção e oferece duas possibilidades:
 
-Se um aparelho antigo tivesse, por exemplo, `10` salvo localmente enquanto a última ficha real era `3`,
-o Neon podia assumir que a próxima ficha era `10`.
+- ARQUIVAR
+  - deixa de aparecer na seleção da Entrada;
+  - preserva o cadastro;
+  - preserva todos os animais e históricos;
+  - pode ser reativado depois.
 
-Isso fazia o sistema pular:
-4, 5, 6, 7, 8 e 9.
+- EXCLUIR CADASTRO
+  - exige confirmação;
+  - exige digitar EXCLUIR;
+  - remove apenas o cadastro central do tutor;
+  - NÃO apaga os animais nem os prontuários já existentes.
 
-## Nova regra
+## Registro de paciente de teste
 
-Se já existe pelo menos um paciente no Neon:
+No CMS → Relatórios → PACIENTES → VER FICHA:
 
-PRÓXIMA FICHA = MAIOR FICHA EXISTENTE + 1
+Se o usuário logado tiver a função Administrador (`roleId = admin`),
+o prontuário mostra o botão:
 
-Exemplo:
+EXCLUIR REGISTRO DE TESTE
 
-001
-002
-003
+A exclusão possui duas etapas:
+1. confirmação mostrando ficha, paciente e tutor;
+2. digitar EXCLUIR.
 
-A próxima será obrigatoriamente:
+Depois disso:
+- o paciente sai da lista local;
+- a exclusão entra na fila de sincronização;
+- o registro é removido do Neon;
+- a auditoria registra quem excluiu o teste.
 
-004
+Usuários que não são Administrador NÃO veem esse botão.
 
-O número local antigo de outro aparelho não consegue mais empurrar a sequência para frente.
+## Proteção contra reaparecimento após exclusão
 
-## Numeração inicial
+Foi adicionada a tabela:
 
-Se ainda NÃO existe nenhum paciente, o sistema continua respeitando a numeração inicial configurada.
+shared_tombstones
 
-## Tela Entrada
+Ela guarda uma marca de exclusão no Neon.
 
-Se a tela Entrada estiver aberta e outro aparelho cadastrar um paciente,
-a sincronização atualiza o próximo número na própria tela.
+Isso impede que um tablet ou PC antigo, ainda contendo uma cópia local do registro,
+mande esse registro de volta e faça o tutor/paciente reaparecer depois de excluído.
 
-## Dados existentes
+## Atualização do banco
 
-Nenhum paciente é apagado ou renumerado por esta correção.
-
-A v1.17.1 apenas corrige QUAL SERÁ A PRÓXIMA FICHA.
-
-## Atualização
-
-Depois de publicar:
+Depois de publicar a v1.17.2, rode:
 
 npm install
 npm run db:init
 
-O db:init não apaga dados.
+O comando NÃO apaga dados existentes.
+Ele apenas cria `shared_tombstones` caso ainda não exista.
 
-Em seguida, abra o sistema e espere aparecer:
-
-NEON SINCRONIZADO
-
-A própria sincronização recalcula a próxima ficha usando os pacientes que já existem.
-
-Versão: 1.17.1
+Versão: 1.17.2

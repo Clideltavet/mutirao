@@ -19,7 +19,7 @@ const EVENT_LABELS = {
   REINTERNADO_APOS_ENTREGA: 'Paciente reinternado',
 }
 
-export default function PatientRecordModal({ patient, onClose, showValues = false }) {
+export default function PatientRecordModal({ patient, onClose, showValues = false, allowDelete = false, onDelete = null }) {
   if (!patient) return null
 
   const details = patientProcedureDetails(patient)
@@ -135,7 +135,16 @@ export default function PatientRecordModal({ patient, onClose, showValues = fals
           </div>
         </section>
 
-        <div className="modal-actions">
+        <div className="modal-actions record-modal-actions">
+          {allowDelete && onDelete && (
+            <button
+              className="record-delete-test-button"
+              type="button"
+              onClick={() => onDelete(patient)}
+            >
+              EXCLUIR REGISTRO DE TESTE
+            </button>
+          )}
           <button className="modal-primary" onClick={onClose}>FECHAR</button>
         </div>
       </section>

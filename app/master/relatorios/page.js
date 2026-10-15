@@ -9,7 +9,9 @@ import {
   patientTotalValue,
   readProcedureCatalog,
 } from '../../../components/procedureUtils'
-import { AUDIT_LABELS, readAuditLog } from '../../../components/auditUtils'
+import { AUDIT_LABELS, auditAction, readAuditLog } from '../../../components/auditUtils'
+import { meApi } from '../../../components/authUtils'
+import { patientRecordKey, queueSyncDelete } from '../../../components/syncUtils'
 
 function readPatients() {
   try {
@@ -63,6 +65,7 @@ export default function ReportsPage() {
   const [tab, setTab] = useState('RESUMO')
   const [selected, setSelected] = useState(null)
   const [auditLog, setAuditLog] = useState([])
+  const [currentAdmin, setCurrentAdmin] = useState(null)
 
   useEffect(() => {
     const refresh = () => {
@@ -70,6 +73,7 @@ export default function ReportsPage() {
       setAuditLog(readAuditLog())
     }
     refresh()
+    meApi().then(user => setCurrentAdmin(user)).catch(() => setCurrentAdmin(null))
     const timer = setInterval(refresh, 1500)
     return () => clearInterval(timer)
   }, [])
@@ -196,6 +200,47 @@ export default function ReportsPage() {
   function auditDateTime(value) {
     const d = new Date(value)
     return Number.isNaN(d.getTime()) ? '-' : d.toLocaleString('pt-BR')
+  }
+
+  function deleteTestPatient(patient) {
+    if (currentAdmin?.roleId !== 'admin') {
+      window.alert('Somente o Administrador pode excluir um registro de teste.')
+      return
+    }
+
+    const first = window.confirm(
+      `EXCLUIR REGISTRO DE TESTE?\n\nFicha: ${String(patient.number || '').padStart(3,'0')}\nPaciente: ${patient.patientName || 'Sem nome'}\nTutor: ${patient.tutorName || '-'}\n\nEsta ação remove o registro dos aparelhos e do Neon.`
+    )
+    if (!first) return
+
+    const confirmation = window.prompt(
+      'Confirmação final: digite EXCLUIR para remover definitivamente este registro de teste.'
+    )
+
+    if (String(confirmation || '').trim().toUpperCase() !== 'EXCLUIR') {
+      window.alert('Exclusão cancelada.')
+      return
+    }
+
+    auditAction({
+      action: 'REGISTRO_TESTE_EXCLUIDO',
+      category: 'ADMIN',
+      patient,
+      details: `Registro de teste excluído pelo Administrador • Ficha ${String(patient.number || '').padStart(3,'0')}`,
+    })
+
+    queueSyncDelete('patients', patientRecordKey(patient))
+
+    const current = readPatients()
+    const targetKey = patientRecordKey(patient)
+    const next = current.filter(item => patientRecordKey(item) !== targetKey)
+
+    localStorage.setItem('deltaVetPatients', JSON.stringify(next))
+    setPatients(next)
+    setAuditLog(readAuditLog())
+    setSelected(null)
+
+    window.alert('Registro de teste removido. A exclusão será sincronizada com o Neon.')
   }
 
   function exportCurrent() {
@@ -557,6 +602,8 @@ export default function ReportsPage() {
         <PatientRecordModal
           patient={selected}
           showValues
+          allowDelete={currentAdmin?.roleId === 'admin'}
+          onDelete={deleteTestPatient}
           onClose={() => setSelected(null)}
         />
       )}
