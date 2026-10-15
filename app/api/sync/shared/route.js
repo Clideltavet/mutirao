@@ -143,7 +143,16 @@ async function updateNextNumber(sql, localNext) {
     remoteValue = Number(typeof value === 'object' && value !== null ? value.value : value) || 1
   }
 
-  const next = Math.max(localValue, remoteValue, patientMax + 1)
+  // REGRA:
+  // Se já existem pacientes, a próxima ficha é SEMPRE a maior ficha existente + 1.
+  // Não aceitamos um número local antigo/alto de outro aparelho, pois isso fazia
+  // o sistema "pular" fichas quando um tablet ou PC possuía localStorage antigo.
+  //
+  // localValue/remoteValue só são usados quando ainda NÃO existe nenhum paciente,
+  // preservando a possibilidade de definir uma numeração inicial.
+  const next = patientMax > 0
+    ? patientMax + 1
+    : Math.max(localValue, remoteValue, 1)
 
   await sql`
     INSERT INTO system_state (key, value, updated_at)

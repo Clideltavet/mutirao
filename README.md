@@ -1,103 +1,69 @@
-# Controle Delta Vet v1.17 — dados compartilhados no Neon
+# Controle Delta Vet v1.17.1 — correção da numeração das fichas
 
-Esta versão corrige o problema de entradas feitas em um aparelho não aparecerem nos outros.
+Esta versão corrige o problema de o sistema pular números de ficha depois da sincronização entre aparelhos.
 
-## Agora ficam compartilhados no Neon
+## O que causava o problema
 
-- pacientes / entradas;
-- clientes / tutores;
-- procedimentos e valores;
-- cirurgia e status do paciente;
-- alta;
-- entrega;
-- observações;
-- auditoria;
-- próxima numeração de ficha.
+Cada aparelho possuía um valor local chamado `deltaVetNextPatientNumber`.
 
-Usuários, senhas, funções e permissões já estavam no Neon desde a v1.16.
+Na v1.17, durante a primeira sincronização, o Neon aceitava o MAIOR valor encontrado entre:
+- número local do PC;
+- número local do tablet;
+- número salvo no Neon;
+- maior ficha existente + 1.
 
-## MUITO IMPORTANTE — os dados antigos não são apagados
+Se um aparelho antigo tivesse, por exemplo, `10` salvo localmente enquanto a última ficha real era `3`,
+o Neon podia assumir que a próxima ficha era `10`.
 
-A v1.17 foi feita para importar automaticamente o que já estava salvo no navegador.
+Isso fazia o sistema pular:
+4, 5, 6, 7, 8 e 9.
 
-A primeira sincronização segue esta ordem:
+## Nova regra
 
-1. lê os registros que já existem naquele computador/tablet;
-2. envia esses registros primeiro para o Neon;
-3. o Neon mescla os dados sem duplicar;
-4. somente depois o dispositivo recebe o banco compartilhado.
+Se já existe pelo menos um paciente no Neon:
 
-Ou seja: o sistema NÃO baixa um banco vazio por cima das entradas antigas.
-
-### Para preservar as entradas que a cliente já fez
-
-Depois de publicar a v1.17:
-
-1. NÃO limpe cache, dados do site ou localStorage;
-2. abra primeiro o sistema NO MESMO computador e NO MESMO navegador em que as entradas foram cadastradas;
-3. espere aparecer `NEON SINCRONIZADO`;
-4. confira se os pacientes continuam aparecendo;
-5. só depois abra o tablet.
-
-Nesse momento, o tablet passa a baixar os mesmos registros do Neon.
-
-## Sincronização entre aparelhos
-
-A sincronização ocorre automaticamente aproximadamente a cada 1,8 segundo.
+PRÓXIMA FICHA = MAIOR FICHA EXISTENTE + 1
 
 Exemplo:
 
-PC / Recepção
-→ cadastra animal
-→ Neon
-→ Tablet
-→ TV da cirurgia
-→ CMS / Relatórios
+001
+002
+003
 
-Se a internet cair:
-- o aparelho continua mantendo os dados localmente;
-- quando a conexão retorna, tenta sincronizar novamente.
+A próxima será obrigatoriamente:
 
-## Proteção contra duplicidade
+004
 
-Pacientes antigos usam:
-- número da ficha;
-- data/hora original de criação.
+O número local antigo de outro aparelho não consegue mais empurrar a sequência para frente.
 
-Clientes, procedimentos e auditoria usam suas próprias chaves.
+## Numeração inicial
 
-## Exclusões
+Se ainda NÃO existe nenhum paciente, o sistema continua respeitando a numeração inicial configurada.
 
-Exclusões de clientes e procedimentos também são enviadas ao Neon.
+## Tela Entrada
 
-## Atualização do banco
+Se a tela Entrada estiver aberta e outro aparelho cadastrar um paciente,
+a sincronização atualiza o próximo número na própria tela.
 
-Depois de atualizar da v1.16 para a v1.17, rode novamente:
+## Dados existentes
+
+Nenhum paciente é apagado ou renumerado por esta correção.
+
+A v1.17.1 apenas corrige QUAL SERÁ A PRÓXIMA FICHA.
+
+## Atualização
+
+Depois de publicar:
 
 npm install
 npm run db:init
 
-O `db:init` usa `CREATE TABLE IF NOT EXISTS`, portanto NÃO apaga usuários ou tabelas já existentes.
+O db:init não apaga dados.
 
-Ele adiciona:
+Em seguida, abra o sistema e espere aparecer:
 
-- `shared_records`
-- `system_state`
+NEON SINCRONIZADO
 
-## Vercel
+A própria sincronização recalcula a próxima ficha usando os pacientes que já existem.
 
-A variável abaixo continua obrigatória:
-
-DATABASE_URL
-
-Depois do novo deploy, faça primeiro a migração no navegador que contém os registros antigos.
-
-## Indicador de sincronização
-
-O sistema mostra:
-
-- `NEON SINCRONIZADO` → banco online atualizado;
-- `SINCRONIZANDO...` → aguardando primeira sincronização;
-- `MODO LOCAL` → dispositivo está sem internet.
-
-Versão: 1.17.0
+Versão: 1.17.1

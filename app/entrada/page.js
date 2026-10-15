@@ -53,6 +53,13 @@ export default function EntradaPage() {
     try {
       setProcedureOptions(readProcedureCatalog())
     } catch {}
+
+    const refreshNumberFromSync = () => {
+      setPatientNumber(getCurrentPatientNumber())
+    }
+
+    window.addEventListener('deltaVetRemoteSync', refreshNumberFromSync)
+    return () => window.removeEventListener('deltaVetRemoteSync', refreshNumberFromSync)
   }, [])
 
   const formattedNumber = useMemo(
