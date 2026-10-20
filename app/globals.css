@@ -3676,3 +3676,35 @@
 .record-delete-test-button:hover {
   background: #fbe0e3;
 }
+
+
+/* ===== v1.17.3 - sincronização manual com Neon ===== */
+.delta-sync-control { display:flex; align-items:center; gap:10px; }
+.delta-sync-control.is-compact { display:inline-flex; }
+.delta-sync-button {
+  min-height:38px; display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  border:1px solid #c9d8e3; border-radius:11px; padding:0 13px; background:#fff;
+  color:#315a7b; font-size:10px; font-weight:900; letter-spacing:.03em; white-space:nowrap;
+  box-shadow:0 6px 16px rgba(23,59,95,.06);
+}
+.delta-sync-button:hover:not(:disabled) { background:#eef5f9; border-color:#9eb8cb; }
+.delta-sync-button:disabled { cursor:wait; opacity:.72; }
+.delta-sync-button.state-synced { border-color:#9fd3b7; background:#effaf4; color:#177644; }
+.delta-sync-button.state-error { border-color:#efb5ba; background:#fff0f1; color:#a52832; }
+.delta-sync-button.state-offline { background:#fff5db; color:#805e00; }
+.delta-sync-button-icon { font-size:15px; line-height:1; }
+.delta-sync-button.state-syncing .delta-sync-button-icon { animation:deltaSyncSpin .85s linear infinite; }
+@keyframes deltaSyncSpin { to { transform:rotate(360deg); } }
+.delta-sync-feedback { min-width:205px; display:grid; gap:2px; }
+.delta-sync-feedback > div { display:flex; align-items:center; gap:6px; }
+.delta-sync-feedback strong { color:#177644; font-size:10px; }
+.delta-sync-feedback small { color:#6f808d; font-size:9px; font-weight:700; }
+.delta-sync-feedback.has-error strong { color:#a52832; }
+.delta-sync-feedback-dot { width:8px; height:8px; border-radius:50%; background:#24b466; }
+.delta-sync-feedback.has-error .delta-sync-feedback-dot { background:#d74d57; }
+.patient-header-actions { display:flex; align-items:center; gap:8px; }
+.reception-user-actions .delta-sync-button { min-height:34px; }
+@media (max-width:780px) {
+  .delta-sync-feedback { display:none; }
+  .delta-sync-button { padding:0 10px; }
+}

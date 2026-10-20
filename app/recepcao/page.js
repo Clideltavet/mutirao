@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import PatientRecordModal from '../../components/PatientRecordModal'
 import { clearTabletSession, getTabletSession, logoutApi } from '../../components/authUtils'
+import SyncStatus from '../../components/SyncStatus'
 
 function readPatients() {
   try {
@@ -74,6 +75,7 @@ export default function ReceptionPage() {
           <p>{todayLabel()}</p>
         </div>
         <div className="reception-user-actions">
+          <SyncStatus compact />
           <div>
             <small>USUÁRIO</small>
             <strong>{session?.name || 'Recepção'}</strong>

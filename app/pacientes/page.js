@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import DischargeModal from '../../components/DischargeModal'
+import SyncStatus from '../../components/SyncStatus'
 
 function readPatients() {
   try { return JSON.parse(localStorage.getItem('deltaVetPatients') || '[]') } catch { return [] }

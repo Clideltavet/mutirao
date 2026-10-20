@@ -65,11 +65,25 @@ export default function SharedDataSync() {
   useEffect(() => {
     mounted.current = true
 
-    async function sync() {
-      if (syncing.current) return
+    async function sync({ manual = false } = {}) {
+      if (syncing.current) {
+        if (manual) {
+          window.dispatchEvent(new CustomEvent('deltaVetSyncResult', {
+            detail: { ok: false, busy: true, error: 'Já existe uma sincronização em andamento.' }
+          }))
+        }
+        return
+      }
+
       syncing.current = true
+
+      if (manual) {
+        window.dispatchEvent(new CustomEvent('deltaVetSyncState', {
+          detail: { syncing: true }
+        }))
+      }
+
       try {
-        // Primeiro envia o que já existe no aparelho para NÃO perder dados antigos.
         const snapshot = readSnapshot()
 
         const response = await fetch('/api/sync/shared', {
@@ -80,28 +94,60 @@ export default function SharedDataSync() {
         })
 
         const data = await response.json().catch(() => null)
-        if (!response.ok || !data) return
+
+        if (!response.ok || !data) {
+          const errorMessage = data?.error || `Falha ao sincronizar com o Neon (${response.status}).`
+          window.dispatchEvent(new CustomEvent('deltaVetSyncResult', {
+            detail: { ok: false, error: errorMessage }
+          }))
+          return
+        }
 
         if (snapshot.deletions?.length) clearSyncDeletes()
         if (mounted.current) applyRemote(data)
-      } catch {
-        // Offline ou Neon indisponível: conserva os dados locais e tenta de novo.
+
+        const result = {
+          ok: true,
+          syncedAt: data.syncedAt || new Date().toISOString(),
+          counts: {
+            patients: Array.isArray(data.patients) ? data.patients.length : 0,
+            clients: Array.isArray(data.clients) ? data.clients.length : 0,
+            procedures: Array.isArray(data.procedures) ? data.procedures.length : 0,
+            audit: Array.isArray(data.auditLog) ? data.auditLog.length : 0,
+          },
+        }
+
+        localStorage.setItem('deltaVetLastSyncResult', JSON.stringify(result))
+        window.dispatchEvent(new CustomEvent('deltaVetSyncResult', { detail: result }))
+      } catch (error) {
+        window.dispatchEvent(new CustomEvent('deltaVetSyncResult', {
+          detail: { ok: false, error: error?.message || 'Não foi possível conectar ao Neon.' }
+        }))
       } finally {
         syncing.current = false
+        if (manual) {
+          window.dispatchEvent(new CustomEvent('deltaVetSyncState', {
+            detail: { syncing: false }
+          }))
+        }
       }
     }
 
-    sync()
-    const timer = setInterval(sync, 1800)
+    const onManualSync = () => sync({ manual: true })
     const onOnline = () => sync()
     const onFocus = () => sync()
 
+    sync()
+    const timer = setInterval(() => sync(), 1800)
+
+    window.addEventListener('deltaVetManualSyncRequest', onManualSync)
     window.addEventListener('online', onOnline)
     window.addEventListener('focus', onFocus)
 
     return () => {
       mounted.current = false
       clearInterval(timer)
+      window.removeEventListener('deltaVetManualSyncRequest', onManualSync)
       window.removeEventListener('online', onOnline)
       window.removeEventListener('focus', onFocus)
     }

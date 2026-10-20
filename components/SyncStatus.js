@@ -1,33 +1,118 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
-export default function SyncStatus() {
+function formatTime(value) {
+  if (!value) return ''
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleTimeString('pt-BR', {
+    hour: '2-digit', minute: '2-digit', second: '2-digit'
+  })
+}
+
+export default function SyncStatus({ compact = false }) {
   const [last, setLast] = useState(null)
   const [online, setOnline] = useState(true)
+  const [syncing, setSyncing] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState(false)
 
   useEffect(() => {
     const refresh = () => {
       setOnline(navigator.onLine)
       setLast(localStorage.getItem('deltaVetLastNeonSync'))
     }
+
+    const onState = event => {
+      setSyncing(!!event.detail?.syncing)
+      if (event.detail?.syncing) {
+        setError(false)
+        setMessage('Sincronizando com o Neon...')
+      }
+    }
+
+    const onResult = event => {
+      const detail = event.detail || {}
+      setSyncing(false)
+      if (detail.ok) {
+        setError(false)
+        setLast(detail.syncedAt || localStorage.getItem('deltaVetLastNeonSync'))
+        setMessage(`Sincronizado com sucesso${detail.counts ? ` • ${detail.counts.patients} paciente(s)` : ''}`)
+      } else if (!detail.busy) {
+        setError(true)
+        setMessage(detail.error || 'Erro ao sincronizar com o Neon.')
+      }
+    }
+
     refresh()
     const timer = setInterval(refresh, 1500)
     window.addEventListener('online', refresh)
     window.addEventListener('offline', refresh)
+    window.addEventListener('deltaVetSyncState', onState)
+    window.addEventListener('deltaVetSyncResult', onResult)
+
     return () => {
       clearInterval(timer)
       window.removeEventListener('online', refresh)
       window.removeEventListener('offline', refresh)
+      window.removeEventListener('deltaVetSyncState', onState)
+      window.removeEventListener('deltaVetSyncResult', onResult)
     }
   }, [])
 
-  const synced = online && !!last
+  const state = useMemo(() => {
+    if (!online) return 'offline'
+    if (syncing) return 'syncing'
+    if (error) return 'error'
+    if (last) return 'synced'
+    return 'waiting'
+  }, [online, syncing, error, last])
+
+  function manualSync() {
+    if (!online) {
+      setError(true)
+      setMessage('Sem internet. Não foi possível sincronizar.')
+      return
+    }
+    setError(false)
+    setMessage('Sincronizando com o Neon...')
+    setSyncing(true)
+    window.dispatchEvent(new CustomEvent('deltaVetManualSyncRequest'))
+  }
+
+  const label =
+    state === 'syncing' ? 'SINCRONIZANDO...' :
+    state === 'synced' ? 'SINCRONIZAR NEON' :
+    state === 'error' ? 'TENTAR NOVAMENTE' :
+    state === 'offline' ? 'SEM INTERNET' :
+    'SINCRONIZAR NEON'
 
   return (
-    <span className={`delta-sync-pill ${synced ? 'is-synced' : 'is-local'}`}>
-      <span className="delta-sync-dot" />
-      {synced ? 'NEON SINCRONIZADO' : online ? 'SINCRONIZANDO...' : 'MODO LOCAL'}
-    </span>
+    <div className={`delta-sync-control ${compact ? 'is-compact' : ''}`}>
+      <button
+        type="button"
+        className={`delta-sync-button state-${state}`}
+        onClick={manualSync}
+        disabled={syncing || !online}
+      >
+        <span className="delta-sync-button-icon">{syncing ? '↻' : '⟳'}</span>
+        <span>{label}</span>
+      </button>
+
+      {!compact && (
+        <div className={`delta-sync-feedback ${error ? 'has-error' : ''}`}>
+          <div>
+            <span className="delta-sync-feedback-dot" />
+            <strong>
+              {!online ? 'Modo local' : error ? 'Falha na sincronização' : last ? 'Neon sincronizado' : 'Aguardando sincronização'}
+            </strong>
+          </div>
+          <small>
+            {message ? message : last ? `Última confirmação: ${formatTime(last)}` : 'Clique no botão para confirmar o envio dos dados.'}
+          </small>
+        </div>
+      )}
+    </div>
   )
 }

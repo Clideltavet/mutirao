@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import DischargeModal from '../../components/DischargeModal'
 import { auditAction } from '../../components/auditUtils'
+import SyncStatus from '../../components/SyncStatus'
 
 const DEFAULT_EXTRAS = ['Já castrada', 'Cio', 'Piometra', 'Prenhez']
 
