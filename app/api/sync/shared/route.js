@@ -149,49 +149,108 @@ async function applyDeletions(sql, deletions) {
 }
 
 async function updateNextNumber(sql, localNext) {
-  const patientMaxRows = await sql`
-    SELECT COALESCE(MAX(
-      CASE
-        WHEN (payload->>'number') ~ '^[0-9]+$'
-        THEN (payload->>'number')::INTEGER
-        ELSE 0
-      END
-    ), 0) AS max_number
-    FROM shared_records
-    WHERE kind = 'patients'
-  `
-
-  const patientMax = Number(patientMaxRows[0]?.max_number || 0)
-  const localValue = Math.max(1, Number(localNext) || 1)
+  const localValue = Math.max(1, Math.floor(Number(localNext) || 1))
 
   const stateRows = await sql`
-    SELECT value FROM system_state
+    SELECT value, updated_at
+    FROM system_state
     WHERE key = 'nextPatientNumber'
     LIMIT 1
   `
 
-  let remoteValue = 1
-  if (stateRows.length) {
-    const value = stateRows[0].value
-    remoteValue = Number(typeof value === 'object' && value !== null ? value.value : value) || 1
+  let next
+  let epoch
+  let source = 'automatic'
+
+  if (!stateRows.length) {
+    // Primeira instalação/migração.
+    // Usa o maior entre a configuração local antiga e a ficha histórica + 1
+    // somente para criar o estado inicial.
+    const patientMaxRows = await sql`
+      SELECT COALESCE(MAX(
+        CASE
+          WHEN (payload->>'number') ~ '^[0-9]+$'
+          THEN (payload->>'number')::INTEGER
+          ELSE 0
+        END
+      ), 0) AS max_number
+      FROM shared_records
+      WHERE kind = 'patients'
+    `
+
+    const patientMax = Number(patientMaxRows[0]?.max_number || 0)
+    next = Math.max(localValue, patientMax > 0 ? patientMax + 1 : 1)
+    epoch = new Date(0).toISOString()
+  } else {
+    const raw = stateRows[0].value
+
+    next = Number(
+      typeof raw === 'object' && raw !== null
+        ? raw.value
+        : raw
+    ) || 1
+
+    epoch =
+      typeof raw === 'object' && raw !== null && raw.epoch
+        ? raw.epoch
+        : (
+            stateRows[0].updated_at?.toISOString?.() ||
+            new Date(stateRows[0].updated_at).toISOString()
+          )
+
+    source =
+      typeof raw === 'object' && raw !== null && raw.source
+        ? raw.source
+        : 'automatic'
   }
 
-  // REGRA:
-  // Se já existem pacientes, a próxima ficha é SEMPRE a maior ficha existente + 1.
-  // Não aceitamos um número local antigo/alto de outro aparelho, pois isso fazia
-  // o sistema "pular" fichas quando um tablet ou PC possuía localStorage antigo.
-  //
-  // localValue/remoteValue só são usados quando ainda NÃO existe nenhum paciente,
-  // preservando a possibilidade de definir uma numeração inicial.
-  const next = patientMax > 0
-    ? patientMax + 1
-    : Math.max(localValue, remoteValue, 1)
+  next = Math.max(1, Math.floor(next))
+
+  // Lê somente as fichas criadas DEPOIS do início da sequência atual.
+  // Isso permite o administrador reiniciar em 001 para um novo mutirão,
+  // mesmo existindo uma ficha 001 de um mutirão antigo.
+  const currentSequenceRows = await sql`
+    SELECT payload
+    FROM shared_records
+    WHERE kind = 'patients'
+      AND COALESCE(
+        NULLIF(payload->>'createdAt', '')::timestamptz,
+        server_updated_at
+      ) >= ${epoch}
+  `
+
+  const usedNumbers = new Set()
+
+  for (const row of currentSequenceRows) {
+    const number = Number(row.payload?.number)
+    if (Number.isFinite(number) && number > 0) {
+      usedNumbers.add(Math.floor(number))
+    }
+  }
+
+  // A sequência só anda quando a ficha atual realmente foi utilizada.
+  // Ex.: configuração = 100 -> entrada usa 100 -> próxima passa para 101.
+  while (usedNumbers.has(next)) {
+    next += 1
+  }
+
+  const state = {
+    value: next,
+    epoch,
+    source,
+  }
 
   await sql`
     INSERT INTO system_state (key, value, updated_at)
-    VALUES ('nextPatientNumber', ${JSON.stringify({ value: next })}::jsonb, NOW())
+    VALUES (
+      'nextPatientNumber',
+      ${JSON.stringify(state)}::jsonb,
+      NOW()
+    )
     ON CONFLICT (key)
-    DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
+    DO UPDATE SET
+      value = EXCLUDED.value,
+      updated_at = NOW()
   `
 
   return next

@@ -53,7 +53,12 @@ function applyRemote(data) {
   if (Array.isArray(data.clients)) localStorage.setItem(SYNC_KEYS.clients, JSON.stringify(data.clients))
   if (Array.isArray(data.procedures)) localStorage.setItem(SYNC_KEYS.procedures, JSON.stringify(data.procedures))
   if (Array.isArray(data.auditLog)) localStorage.setItem(SYNC_KEYS.audit, JSON.stringify(data.auditLog))
-  if (data.nextPatientNumber) localStorage.setItem('deltaVetNextPatientNumber', String(data.nextPatientNumber))
+  if (data.nextPatientNumber) {
+    localStorage.setItem('deltaVetNextPatientNumber', String(data.nextPatientNumber))
+    window.dispatchEvent(new CustomEvent('deltaVetSequenceUpdated', {
+      detail: { nextPatientNumber: Number(data.nextPatientNumber) }
+    }))
+  }
   localStorage.setItem('deltaVetLastNeonSync', new Date().toISOString())
   window.dispatchEvent(new CustomEvent('deltaVetRemoteSync', { detail: data }))
 }

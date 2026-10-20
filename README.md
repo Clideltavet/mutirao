@@ -1,35 +1,81 @@
-# Controle Delta Vet v1.17.3 — botão SINCRONIZAR NEON
+# Controle Delta Vet v1.17.4 — correção definitiva da sequência de fichas
 
-Novo botão manual para forçar a sincronização com o Neon.
+## Problema corrigido
 
-## Onde aparece
-- tela inicial do tablet;
-- Painel CMS;
-- Recepção;
-- Painel Pacientes;
-- Sala de Cirurgia.
+Nas versões anteriores, o campo:
 
-## Feedback
-Ao clicar:
-- muda para `SINCRONIZANDO...`;
-- envia primeiro os dados locais;
-- recebe os dados consolidados do Neon;
-- confirma sucesso ou mostra erro.
+CMS → Configurações → Próxima ficha
 
-Sucesso:
-- `Neon sincronizado`;
-- quantidade de pacientes sincronizados;
-- horário da última confirmação.
+era alterado apenas no navegador/localStorage.
 
-Falha:
-- `Falha na sincronização`;
-- mensagem de erro;
-- botão vira `TENTAR NOVAMENTE`.
+Além disso, a sincronização recalculava a sequência a partir das fichas históricas.
+Por isso a cliente podia colocar, por exemplo, 150 nas Configurações e a tela Entrada
+continuava mostrando o número antigo.
 
-Sem internet:
-- `SEM INTERNET` / `Modo local`.
+## Agora a configuração fica no Neon
 
-A sincronização automática continua rodando aproximadamente a cada 1,8 segundo.
-O botão é uma confirmação manual adicional.
+Foi criada a API:
 
-Versão: 1.17.3
+- GET /api/admin/settings/sequence
+- PATCH /api/admin/settings/sequence
+
+O Administrador salva a próxima ficha diretamente em `system_state` no Neon.
+
+Ao salvar:
+
+1. o Neon grava exatamente o número informado;
+2. o computador atual é atualizado imediatamente;
+3. a sincronização avisa as telas abertas;
+4. tablet e outros aparelhos recebem a nova sequência;
+5. a tela Entrada passa a mostrar o novo número.
+
+## Exemplo
+
+Administrador configura:
+
+150
+
+A tela Entrada mostrará:
+
+Paciente nº 150
+
+Depois de cadastrar essa ficha:
+
+151
+
+Depois:
+
+152
+153
+154...
+
+## Reiniciar sequência
+
+Também é permitido informar:
+
+1
+
+mesmo que existam fichas 001, 002 e 003 de mutirões antigos.
+
+Isso NÃO apaga os registros antigos.
+
+O sistema registra um `epoch` no Neon para identificar o início da nova sequência,
+então somente fichas criadas depois dessa alteração fazem a sequência avançar.
+
+## Importante
+
+Agora o servidor é a fonte oficial da numeração.
+
+Valores antigos de localStorage de outro tablet/computador não conseguem mais
+sobrescrever uma sequência alterada pelo Administrador.
+
+## Atualização
+
+Depois de publicar:
+
+npm install
+npm run db:init
+
+Nenhuma tabela é apagada.
+
+Versão: 1.17.4

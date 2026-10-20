@@ -3708,3 +3708,106 @@
   .delta-sync-feedback { display:none; }
   .delta-sync-button { padding:0 10px; }
 }
+
+
+/* ===== v1.17.4 - sequência de fichas salva no Neon ===== */
+.cms-config-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.sequence-setting-title {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 16px;
+}
+
+.sequence-setting-title h2 {
+  margin-bottom: 5px;
+}
+
+.sequence-setting-title p {
+  max-width: 680px;
+  margin: 0;
+  color: #6c7d8a;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+.sequence-preview-card {
+  min-width: 160px;
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: #eef5f9;
+  border: 1px solid #d3e1ea;
+}
+
+.sequence-preview-card small {
+  color: #6f8190;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.sequence-preview-card strong {
+  color: #173b5f;
+  font-size: 34px;
+  line-height: 1;
+}
+
+.sequence-number-field {
+  max-width: 430px;
+}
+
+.sequence-number-field input {
+  font-size: 22px;
+  font-weight: 900;
+  color: #173b5f;
+}
+
+.sequence-warning {
+  width: fit-content;
+  margin: 12px 0;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: #fff4ce;
+  color: #735700;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.sequence-save-button {
+  min-width: 230px;
+}
+
+.cms-settings-error {
+  margin-top: 10px;
+  padding: 11px 12px;
+  border-radius: 9px;
+  background: #fde8e8;
+  color: #a12a2a;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+@media (max-width: 700px) {
+  .sequence-setting-title {
+    grid-template-columns: 1fr;
+  }
+
+  .sequence-preview-card {
+    width: 100%;
+  }
+
+  .cms-config-header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

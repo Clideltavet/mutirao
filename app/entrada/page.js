@@ -55,11 +55,37 @@ export default function EntradaPage() {
     } catch {}
 
     const refreshNumberFromSync = () => {
-      setPatientNumber(getCurrentPatientNumber())
+      const synced = getCurrentPatientNumber()
+      setPatientNumber(synced)
+    }
+
+    const applySequenceUpdate = event => {
+      const number = Math.max(
+        1,
+        Number(event.detail?.nextPatientNumber) || getCurrentPatientNumber()
+      )
+
+      localStorage.setItem('deltaVetNextPatientNumber', String(number))
+      setPatientNumber(number)
+
+      // Se Caixa estava usando o número automático anterior,
+      // acompanha a nova ficha. Se foi editada manualmente, preserva.
+      setLocationNumber(current => {
+        if (location !== 'Caixa') return current
+        if (!current || current === String(patientNumber).padStart(3,'0')) {
+          return String(number).padStart(3,'0')
+        }
+        return current
+      })
     }
 
     window.addEventListener('deltaVetRemoteSync', refreshNumberFromSync)
-    return () => window.removeEventListener('deltaVetRemoteSync', refreshNumberFromSync)
+    window.addEventListener('deltaVetSequenceUpdated', applySequenceUpdate)
+
+    return () => {
+      window.removeEventListener('deltaVetRemoteSync', refreshNumberFromSync)
+      window.removeEventListener('deltaVetSequenceUpdated', applySequenceUpdate)
+    }
   }, [])
 
   const formattedNumber = useMemo(
