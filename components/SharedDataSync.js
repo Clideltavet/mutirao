@@ -95,7 +95,7 @@ export default function SharedDataSync() {
 
       {
         window.dispatchEvent(new CustomEvent('deltaVetSyncState', {
-          detail: { syncing: true }
+          detail: { syncing: true, manual }
         }))
       }
 
@@ -144,7 +144,7 @@ export default function SharedDataSync() {
         syncing.current = false
         {
           window.dispatchEvent(new CustomEvent('deltaVetSyncState', {
-            detail: { syncing: false }
+            detail: { syncing: false, manual }
           }))
         }
       }

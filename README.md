@@ -1,4 +1,11 @@
-# Controle Delta Vet v1.18.0
+# Controle Delta Vet v1.18.1
+
+Correção visual v1.18.1: sincronização automática continua a cada 1,8 segundo,
+sem alternar o botão a cada ciclo. “Sincronizando...” aparece na primeira conexão
+ou no acionamento manual. Falhas e horário confirmado continuam visíveis.
+Arquivos desta correção: components/SharedDataSync.js, components/SyncStatus.js,
+package.json, package-lock.json, tests/browser.mjs e README.md.
+Não há migração adicional para quem já aplicou a v1.18.0.
 
 Manutenção incremental da v1.17.4. As telas e o histórico existentes foram mantidos.
 

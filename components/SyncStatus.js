@@ -26,6 +26,9 @@ export default function SyncStatus({ compact = false }) {
     }
 
     const onState = event => {
+      // Polling stays silent after the first confirmed connection. Keep any
+      // error visible until a request actually succeeds.
+      if (event.detail?.syncing && !event.detail?.manual && localStorage.getItem('deltaVetLastNeonSync')) return
       setSyncing(!!event.detail?.syncing)
       if (event.detail?.syncing) {
         setError(false)

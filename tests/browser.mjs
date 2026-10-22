@@ -47,6 +47,9 @@ try{
  await fill(a,'Primeiro')
  const held=new Promise(r=>captured=r);delayNext=true
  await held
+ assert.equal(await a.getByRole('button',{name:/SINCRONIZAR NEON/}).count(),1)
+ await a.getByRole('button',{name:/SINCRONIZAR NEON/}).click()
+ assert.equal(await a.getByRole('button',{name:/SINCRONIZANDO/}).count(),1)
  await a.getByRole('button',{name:'ENVIAR',exact:true}).click();await number(a,501)
  release();await new Promise(r=>setTimeout(r,200));await number(a,501)
  await fill(a,'Segundo');await a.getByRole('button',{name:'ENVIAR',exact:true}).click();await number(a,502)
