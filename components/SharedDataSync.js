@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { SYNC_KEYS, clearSyncDeletes, safeRead } from './syncUtils'
+import { acceptSequence } from './sequenceState'
+import { collections, mergeCollection, canonical } from './syncMerge'
+import { SYNC_KEYS, safeRead } from './syncUtils'
 
 function stamp(items, kind) {
   if (!Array.isArray(items)) return { next: [], changed: false }
@@ -47,20 +49,29 @@ function readSnapshot() {
   }
 }
 
-function applyRemote(data) {
-  if (!data) return
-  if (Array.isArray(data.patients)) localStorage.setItem(SYNC_KEYS.patients, JSON.stringify(data.patients))
-  if (Array.isArray(data.clients)) localStorage.setItem(SYNC_KEYS.clients, JSON.stringify(data.clients))
-  if (Array.isArray(data.procedures)) localStorage.setItem(SYNC_KEYS.procedures, JSON.stringify(data.procedures))
-  if (Array.isArray(data.auditLog)) localStorage.setItem(SYNC_KEYS.audit, JSON.stringify(data.auditLog))
-  if (data.nextPatientNumber) {
-    localStorage.setItem('deltaVetNextPatientNumber', String(data.nextPatientNumber))
-    window.dispatchEvent(new CustomEvent('deltaVetSequenceUpdated', {
-      detail: { nextPatientNumber: Number(data.nextPatientNumber) }
-    }))
+function applyRemote(data, snapshot) {
+  const pending = safeRead('deltaVetSyncDeletes', [])
+  const confirmed = data.deletions || []
+  for (const [field, kind, storageKey, key] of collections) {
+    if (!Array.isArray(data[field])) continue
+    const deleted = [...confirmed, ...pending].filter(d => d.kind === kind).map(d => d.recordKey)
+    const merged = mergeCollection(data[field], safeRead(storageKey, []), snapshot[field] || [], key, deleted)
+    localStorage.setItem(storageKey, JSON.stringify(merged))
   }
-  localStorage.setItem('deltaVetLastNeonSync', new Date().toISOString())
+  // Acknowledge only deletions actually present on the server, never a new
+  // deletion queued while this request was in flight.
+  localStorage.setItem('deltaVetSyncDeletes', JSON.stringify(pending.filter(d =>
+    !confirmed.some(c => c.kind === d.kind && c.recordKey === d.recordKey))))
+  acceptSequence(data)
+  localStorage.setItem('deltaVetLastNeonSync', data.syncedAt)
   window.dispatchEvent(new CustomEvent('deltaVetRemoteSync', { detail: data }))
+  let pendingCount = safeRead('deltaVetSyncDeletes', []).length
+  for (const [field, , storageKey, key] of collections) {
+    const remote = new Map((data[field] || []).map(p => [key(p), canonical(p)]))
+    pendingCount += safeRead(storageKey, []).filter(p => remote.get(key(p)) !== canonical(p)).length
+  }
+  pendingCount += Object.keys(localStorage).filter(k => k.startsWith('deltaVetPendingEntry:')).length
+  return pendingCount
 }
 
 export default function SharedDataSync() {
@@ -82,7 +93,7 @@ export default function SharedDataSync() {
 
       syncing.current = true
 
-      if (manual) {
+      {
         window.dispatchEvent(new CustomEvent('deltaVetSyncState', {
           detail: { syncing: true }
         }))
@@ -96,6 +107,7 @@ export default function SharedDataSync() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(snapshot),
           cache: 'no-store',
+          signal: AbortSignal.timeout(20000),
         })
 
         const data = await response.json().catch(() => null)
@@ -108,11 +120,11 @@ export default function SharedDataSync() {
           return
         }
 
-        if (snapshot.deletions?.length) clearSyncDeletes()
-        if (mounted.current) applyRemote(data)
+        const pendingCount = mounted.current ? applyRemote(data, snapshot) : 0
 
         const result = {
           ok: true,
+          pendingCount,
           syncedAt: data.syncedAt || new Date().toISOString(),
           counts: {
             patients: Array.isArray(data.patients) ? data.patients.length : 0,
@@ -130,7 +142,7 @@ export default function SharedDataSync() {
         }))
       } finally {
         syncing.current = false
-        if (manual) {
+        {
           window.dispatchEvent(new CustomEvent('deltaVetSyncState', {
             detail: { syncing: false }
           }))

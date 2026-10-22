@@ -1,4 +1,5 @@
 'use client'
+import { patientRecordKey } from '../../components/syncUtils'
 
 import { useEffect, useMemo, useState } from 'react'
 import DischargeModal from '../../components/DischargeModal'
@@ -153,7 +154,7 @@ export default function CirurgiaPage() {
       type: 'TV',
     }
     const updated = readPatients().map((patient) =>
-      Number(patient.number) === Number(selectedPatient.number)
+      patientRecordKey(patient) === patientRecordKey(selectedPatient)
         ? {
             ...patient,
             surgeryExtras: selectedExtras,
@@ -177,7 +178,7 @@ export default function CirurgiaPage() {
     )
     localStorage.setItem('deltaVetPatients', JSON.stringify(updated))
 
-    const savedPatient = updated.find(patient => Number(patient.number) === Number(selectedPatient.number))
+    const savedPatient = updated.find(patient => patientRecordKey(patient) === patientRecordKey(selectedPatient))
     auditAction({
       action: 'CIRURGIA_CONFIRMADA',
       category: 'CIRURGIA',

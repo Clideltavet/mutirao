@@ -13,6 +13,7 @@ function formatTime(value) {
 
 export default function SyncStatus({ compact = false }) {
   const [last, setLast] = useState(null)
+  const [pending, setPending] = useState(0)
   const [online, setOnline] = useState(true)
   const [syncing, setSyncing] = useState(false)
   const [message, setMessage] = useState('')
@@ -34,11 +35,13 @@ export default function SyncStatus({ compact = false }) {
 
     const onResult = event => {
       const detail = event.detail || {}
+      if (detail.busy) return
       setSyncing(false)
       if (detail.ok) {
         setError(false)
+        setPending(detail.pendingCount || 0)
         setLast(detail.syncedAt || localStorage.getItem('deltaVetLastNeonSync'))
-        setMessage(`Sincronizado com sucesso${detail.counts ? ` • ${detail.counts.patients} paciente(s)` : ''}`)
+        setMessage(detail.pendingCount ? `${detail.pendingCount} pendência(s) local(is). Retome entradas pendentes ou entre com a permissão necessária para enviá-las.` : `Sincronizado com sucesso${detail.counts ? ` • ${detail.counts.patients} paciente(s)` : ''}`)
       } else if (!detail.busy) {
         setError(true)
         setMessage(detail.error || 'Erro ao sincronizar com o Neon.')
@@ -105,11 +108,11 @@ export default function SyncStatus({ compact = false }) {
           <div>
             <span className="delta-sync-feedback-dot" />
             <strong>
-              {!online ? 'Modo local' : error ? 'Falha na sincronização' : last ? 'Neon sincronizado' : 'Aguardando sincronização'}
+              {!online ? 'Sem internet / modo local' : syncing ? 'Sincronizando...' : error ? 'Falha na sincronização' : pending ? 'Neon conectado • pendências locais' : last ? 'Neon sincronizado' : 'Aguardando sincronização'}
             </strong>
           </div>
           <small>
-            {message ? message : last ? `Última confirmação: ${formatTime(last)}` : 'Clique no botão para confirmar o envio dos dados.'}
+            {message || 'Sincronização automática ativa.'}{last ? ` • Última confirmação: ${formatTime(last)}` : ''}
           </small>
         </div>
       )}

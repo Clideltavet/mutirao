@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { acceptSequence } from '../../../components/sequenceState'
 import SyncStatus from '../../../components/SyncStatus'
 
 export default function Page() {
@@ -35,7 +36,7 @@ export default function Page() {
         setNextNumber(String(number))
 
         // Mantém o cache local alinhado para a tela Entrada deste mesmo aparelho.
-        localStorage.setItem('deltaVetNextPatientNumber', String(number))
+        acceptSequence(data)
       } catch (err) {
         if (active) setError(err.message)
       } finally {
@@ -68,13 +69,10 @@ export default function Page() {
       }
 
       // Atualiza imediatamente o aparelho atual.
-      localStorage.setItem('deltaVetNextPatientNumber', String(n))
-      setNextNumber(String(n))
+      const confirmed = acceptSequence(data)
+      setNextNumber(String(confirmed))
 
       // Força os outros dados a sincronizarem e avisa telas abertas.
-      window.dispatchEvent(new CustomEvent('deltaVetSequenceUpdated', {
-        detail: { nextPatientNumber: n }
-      }))
       window.dispatchEvent(new CustomEvent('deltaVetManualSyncRequest'))
 
       setMsg(`Sequência salva no Neon. A próxima ficha será ${String(n).padStart(3,'0')}.`)

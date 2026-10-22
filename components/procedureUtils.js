@@ -96,3 +96,12 @@ export function moneyToNumber(value = '') {
   const digits = String(value).replace(/\D/g, '')
   return digits ? Number(digits) / 100 : 0
 }
+
+export function preserveProcedureDetails(names, historical = [], catalog = []) {
+  const remaining = [...(historical || [])]
+  return names.map(name => {
+    const i = remaining.findIndex(p => p.name === name)
+    if (i >= 0) return remaining.splice(i,1)[0]
+    return procedureDetailsForNames([name],catalog)[0]
+  })
+}

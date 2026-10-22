@@ -1,4 +1,5 @@
 'use client'
+import { matchesPatientRoute, patientRouteId } from '../../../components/syncUtils'
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
@@ -24,7 +25,7 @@ function formatTime(iso) {
 export default function PatientOperationalPage() {
   const params = useParams()
   const router = useRouter()
-  const number = Number(params.id)
+  const number = decodeURIComponent(params.id)
   const [patients, setPatients] = useState([])
   const [showSurgery, setShowSurgery] = useState(false)
   const [showDischarge, setShowDischarge] = useState(false)
@@ -44,7 +45,7 @@ export default function PatientOperationalPage() {
     }
   }, [])
 
-  const patient = patients.find(item => Number(item.number) === number)
+  const patient = patients.find(item => matchesPatientRoute(item, number))
 
   if (!patient) {
     return (
@@ -72,7 +73,7 @@ export default function PatientOperationalPage() {
           </div>
           <button
             className="edit-secondary-button"
-            onClick={() => router.push(`/pacientes/${patient.number}/editar`)}
+            onClick={() => router.push(`/pacientes/${patientRouteId(patient)}/editar`)}
           >
             EDITAR CADASTRO
           </button>

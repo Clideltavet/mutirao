@@ -1,15 +1,16 @@
 'use client'
+import { matchesPatientRoute, patientRecordKey } from '../../../../components/syncUtils'
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import PhoneInput from '../../../../components/PhoneInput'
-import { procedureDetailsForNames, readProcedureCatalog } from '../../../../components/procedureUtils'
+import { preserveProcedureDetails, readProcedureCatalog } from '../../../../components/procedureUtils'
 import { auditAction, getCurrentActor } from '../../../../components/auditUtils'
 
 export default function EditPatientPage() {
   const params = useParams()
   const router = useRouter()
-  const number = Number(params.id)
+  const number = decodeURIComponent(params.id)
   const [p, setP] = useState(null)
   const [message, setMessage] = useState('')
   const [procedureOptions, setProcedureOptions] = useState([])
@@ -18,7 +19,7 @@ export default function EditPatientPage() {
     const at = new Date().toISOString()
     const actor = getCurrentActor()
     const all = JSON.parse(localStorage.getItem('deltaVetPatients') || '[]')
-    const found = all.find(x => Number(x.number) === number)
+    const found = all.find(x => matchesPatientRoute(x, number))
     if (found) setP({...found, procedures: [...(found.procedures || []), '', '', '', ''].slice(0,4)})
     setProcedureOptions(readProcedureCatalog())
   }, [number])
@@ -35,11 +36,12 @@ export default function EditPatientPage() {
     const at = new Date().toISOString()
     const actor = getCurrentActor()
     const all = JSON.parse(localStorage.getItem('deltaVetPatients') || '[]')
-    const updated = all.map(x => Number(x.number) === number ? {
-      ...p,
+    const updated = all.map(x => patientRecordKey(x) === patientRecordKey(p) ? {
+      ...x,
+      ...Object.fromEntries(['patientName','species','sex','tutorName','phone','weight','location','locationNumber','notes'].map(key => [key,p[key]])),
       procedures: p.procedures.filter(Boolean),
-      procedureDetails: procedureDetailsForNames(p.procedures.filter(Boolean), procedureOptions),
-      totalValue: procedureDetailsForNames(p.procedures.filter(Boolean), procedureOptions)
+      procedureDetails: preserveProcedureDetails(p.procedures.filter(Boolean), p.procedureDetails, procedureOptions),
+      totalValue: preserveProcedureDetails(p.procedures.filter(Boolean), p.procedureDetails, procedureOptions)
         .reduce((sum, item) => sum + (Number(item.value) || 0), 0),
       updatedAt: at,
       _syncUpdatedAt: at,
@@ -51,7 +53,7 @@ export default function EditPatientPage() {
     } : x)
     localStorage.setItem('deltaVetPatients', JSON.stringify(updated))
 
-    const savedPatient = updated.find(x => Number(x.number) === number)
+    const savedPatient = updated.find(x => matchesPatientRoute(x, number))
     auditAction({
       action: 'PACIENTE_EDITADO',
       category: 'PACIENTE',
@@ -62,14 +64,14 @@ export default function EditPatientPage() {
     })
 
     setMessage('Alterações salvas.')
-    setTimeout(() => router.push(`/pacientes/${number}`), 500)
+    setTimeout(() => router.push(`/pacientes/${encodeURIComponent(number)}`), 500)
   }
 
   return (
     <main className="form-screen">
       <form className="entry-panel" onSubmit={save}>
         <header className="entry-topbar">
-          <button type="button" className="back-arrow" onClick={() => router.push(`/pacientes/${number}`)}>←</button>
+          <button type="button" className="back-arrow" onClick={() => router.push(`/pacientes/${encodeURIComponent(number)}`)}>←</button>
           <div className="patient-number">Paciente nº {String(p.number).padStart(3,'0')}</div>
         </header>
 
@@ -130,7 +132,7 @@ export default function EditPatientPage() {
         {message && <div className="inline-message">{message}</div>}
 
         <div className="form-actions">
-          <button type="button" className="secondary-button" onClick={() => router.push(`/pacientes/${number}`)}>CANCELAR</button>
+          <button type="button" className="secondary-button" onClick={() => router.push(`/pacientes/${encodeURIComponent(number)}`)}>CANCELAR</button>
           <button type="submit" className="primary-button">SALVAR ALTERAÇÕES</button>
         </div>
       </form>

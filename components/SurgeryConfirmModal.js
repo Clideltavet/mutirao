@@ -1,4 +1,5 @@
 'use client'
+import { patientRecordKey } from './syncUtils'
 
 import { useEffect, useState } from 'react'
 import { auditAction, getCurrentActor } from './auditUtils'
@@ -54,7 +55,7 @@ export default function SurgeryConfirmModal({ patient, onClose, onSaved }) {
     const at = new Date().toISOString()
     const actor = getCurrentActor()
     const updated = patients.map(item =>
-      Number(item.number) === Number(patient.number)
+      patientRecordKey(item) === patientRecordKey(patient)
         ? {
             ...item,
             status: 'CONFIRMADO',
@@ -73,7 +74,7 @@ export default function SurgeryConfirmModal({ patient, onClose, onSaved }) {
 
     localStorage.setItem('deltaVetPatients', JSON.stringify(updated))
 
-    const savedPatient = updated.find(item => Number(item.number) === Number(patient.number))
+    const savedPatient = updated.find(item => patientRecordKey(item) === patientRecordKey(patient))
     auditAction({
       action: 'CIRURGIA_CONFIRMADA',
       category: 'CIRURGIA',

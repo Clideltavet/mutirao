@@ -49,3 +49,11 @@ export function queueSyncDelete(kind, recordKey) {
 export function clearSyncDeletes() {
   localStorage.setItem('deltaVetSyncDeletes', '[]')
 }
+
+export function patientRouteId(patient) {
+  return encodeURIComponent(patientRecordKey(patient))
+}
+export function matchesPatientRoute(patient, route) {
+  // Legacy numeric links remain readable; new links always use stable identity.
+  return patientRecordKey(patient) === route || (!route.includes('::') && /^\d+$/.test(route) && String(patient.number) === route)
+}

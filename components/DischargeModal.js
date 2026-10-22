@@ -1,4 +1,5 @@
 'use client'
+import { patientRecordKey } from './syncUtils'
 
 import { useEffect, useState } from 'react'
 import { auditAction, getCurrentActor } from './auditUtils'
@@ -35,7 +36,7 @@ export default function DischargeModal({ patient, onClose, onSaved }) {
       fallbackUsername: 'tv-cirurgia',
       fallbackType: 'TV',
     })
-    const updated = all.map(p => Number(p.number) === Number(patient.number) ? {
+    const updated = all.map(p => patientRecordKey(p) === patientRecordKey(patient) ? {
       ...p,
       dischargeStatus: 'ALTA',
       dischargedAt: at,
@@ -50,7 +51,7 @@ export default function DischargeModal({ patient, onClose, onSaved }) {
 
     localStorage.setItem('deltaVetPatients', JSON.stringify(updated))
 
-    const savedPatient = updated.find(p => Number(p.number) === Number(patient.number))
+    const savedPatient = updated.find(p => patientRecordKey(p) === patientRecordKey(patient))
     auditAction({
       action: 'ALTA',
       category: 'ALTA',

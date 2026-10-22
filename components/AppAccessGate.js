@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { clearTabletSession, meApi, setTabletSession } from './authUtils'
 
 function needed(path) {
+  if (path.startsWith('/configuracoes')) return 'MASTER'
   if (path.startsWith('/entrada')) return 'ENTRADA'
   if (path.startsWith('/pacientes')) return 'PACIENTES'
   if (path.startsWith('/saida')) return 'SAIDA'

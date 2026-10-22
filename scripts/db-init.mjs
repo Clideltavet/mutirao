@@ -187,3 +187,6 @@ console.log(`✅ Admin criado/atualizado: ${adminUser}`)
 console.log('✅ Senha do admin veio de ADMIN_PASSWORD.')
 console.log('')
 console.log('Agora rode: npm run dev')
+
+// Fresh installations also receive the atomic sync functions.
+await import('./db-migrate.mjs')

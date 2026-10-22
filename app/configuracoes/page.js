@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { acceptSequence } from '../../components/sequenceState'
 import { useRouter } from 'next/navigation'
 
 const DEFAULT_EXTRAS = ['Já castrada', 'Cio', 'Piometra', 'Prenhez']
@@ -48,12 +49,14 @@ export default function ConfiguracoesPage() {
     setNewVet('')
   }
 
-  function saveInitialNumber() {
-    const n = Math.max(1, Number(initialNumber) || 1)
-    localStorage.setItem('deltaVetNextPatientNumber', String(n))
-    setInitialNumber(String(n))
-    setSaved('Numeração salva.')
-    setTimeout(() => setSaved(''), 1500)
+  async function saveInitialNumber() {
+    try {
+      const response = await fetch('/api/admin/settings/sequence', { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({nextPatientNumber: Number(initialNumber)}) })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error)
+      setInitialNumber(String(acceptSequence(data)))
+      setSaved('Numeração salva no Neon.')
+    } catch (e) { setSaved(e.message) }
   }
 
   return (

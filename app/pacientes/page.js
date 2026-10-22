@@ -1,4 +1,5 @@
 'use client'
+import { patientRouteId } from '../../components/syncUtils'
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -116,7 +117,7 @@ export default function PacientesPage() {
               <tr
                 key={`${p.number}-${p.createdAt}`}
                 className="tablet-patient-row"
-                onClick={() => router.push(`/pacientes/${p.number}`)}
+                onClick={() => router.push(`/pacientes/${patientRouteId(p)}`)}
               >
                 <td>{fTime(p.createdAt)}</td>
                 <td>{fDate(p.createdAt)}</td>
@@ -167,7 +168,7 @@ export default function PacientesPage() {
                   ) : (
                     <button
                       className="patient-open-button"
-                      onClick={() => router.push(`/pacientes/${p.number}`)}
+                      onClick={() => router.push(`/pacientes/${patientRouteId(p)}`)}
                     >
                       ABRIR
                     </button>
