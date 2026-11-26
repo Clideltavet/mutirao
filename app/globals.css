@@ -3811,4 +3811,56 @@
     justify-content: space-between;
   }
 }
-\n\n/* ===== v1.17.6 - ajustes solicitados pela cliente ===== */\n.report-observations-cell {\n  min-width: 230px;\n  max-width: 360px;\n  vertical-align: top !important;\n}\n\n.report-note-line {\n  margin-bottom: 4px;\n  color: #43596a;\n  font-size: 10px;\n  line-height: 1.35;\n}\n\n.report-note-empty {\n  color: #98a4ad;\n  font-size: 10px;\n  font-style: italic;\n}\n\n.report-change-summary {\n  width: fit-content;\n  margin-top: 6px;\n  padding: 4px 7px;\n  border-radius: 999px;\n  background: #edf4f8;\n  color: #315a7b;\n  font-size: 9px;\n  font-weight: 900;\n}\n\n.report-row-actions {\n  display: grid;\n  gap: 6px;\n  min-width: 104px;\n}\n\n.record-delete-test-inline {\n  min-height: 30px;\n  border: 1px solid #efb5ba;\n  border-radius: 7px;\n  background: #fff0f1;\n  color: #a52832;\n  padding: 0 8px;\n  font-size: 8px;\n  font-weight: 900;\n}\n\n.record-delete-test-inline:hover {\n  background: #fbe0e3;\n}\n
+
+
+/* ===== v1.17.6 - ajustes solicitados pela cliente ===== */
+.report-observations-cell {
+  min-width: 230px;
+  max-width: 360px;
+  vertical-align: top !important;
+}
+
+.report-note-line {
+  margin-bottom: 4px;
+  color: #43596a;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.report-note-empty {
+  color: #98a4ad;
+  font-size: 10px;
+  font-style: italic;
+}
+
+.report-change-summary {
+  width: fit-content;
+  margin-top: 6px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: #edf4f8;
+  color: #315a7b;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.report-row-actions {
+  display: grid;
+  gap: 6px;
+  min-width: 104px;
+}
+
+.record-delete-test-inline {
+  min-height: 30px;
+  border: 1px solid #efb5ba;
+  border-radius: 7px;
+  background: #fff0f1;
+  color: #a52832;
+  padding: 0 8px;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.record-delete-test-inline:hover {
+  background: #fbe0e3;
+}
