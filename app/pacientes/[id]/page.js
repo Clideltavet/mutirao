@@ -1,78 +1,108 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import DischargeModal from '../../../components/DischargeModal'
-import SurgeryConfirmModal from '../../../components/SurgeryConfirmModal'
+import {
+  patientPath,
+  findPatient,
+  identity,
+  updatePatient,
+  read,
+  keys,
+  confirmedAction,
+} from "../../../components/confirmedStore";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import DischargeModal from "../../../components/DischargeModal";
+import SurgeryConfirmModal from "../../../components/SurgeryConfirmModal";
 
 function readPatients() {
   try {
-    const value = JSON.parse(localStorage.getItem('deltaVetPatients') || '[]')
-    return Array.isArray(value) ? value : []
+    const value = JSON.parse(
+      sessionStorage.getItem("deltaVetConfirmedPatients") || "[]",
+    );
+    return Array.isArray(value) ? value : [];
   } catch {
-    return []
+    return [];
   }
 }
 
 function formatTime(iso) {
-  if (!iso) return '-'
-  const date = new Date(iso)
-  if (Number.isNaN(date.getTime())) return '-'
-  return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  if (!iso) return "-";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export default function PatientOperationalPage() {
-  const params = useParams()
-  const router = useRouter()
-  const number = Number(params.id)
-  const [patients, setPatients] = useState([])
-  const [showSurgery, setShowSurgery] = useState(false)
-  const [showDischarge, setShowDischarge] = useState(false)
+  const params = useParams();
+  const router = useRouter();
+  const number = params.id;
+  const [patients, setPatients] = useState([]);
+  const [showSurgery, setShowSurgery] = useState(false);
+  const [showDischarge, setShowDischarge] = useState(false);
 
   function refresh(updated) {
-    setPatients(updated || readPatients())
+    setPatients(updated || readPatients());
   }
 
   useEffect(() => {
-    refresh()
-    const timer = setInterval(() => refresh(), 1000)
-    const onStorage = event => event.key === 'deltaVetPatients' && refresh()
-    window.addEventListener('storage', onStorage)
+    refresh();
+    const timer = setInterval(() => refresh(), 1000);
+    const onStorage = (event) =>
+      event.key === "deltaVetConfirmedPatients" && refresh();
+    window.addEventListener("storage", onStorage);
     return () => {
-      clearInterval(timer)
-      window.removeEventListener('storage', onStorage)
-    }
-  }, [])
+      clearInterval(timer);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, []);
 
-  const patient = patients.find(item => Number(item.number) === number)
+  const patient = findPatient(patients, number);
 
   if (!patient) {
     return (
       <main className="patient-op-screen">
         <section className="patient-op-card">
           <h1>Paciente não encontrado</h1>
-          <button className="edit-secondary-button" onClick={() => router.push('/pacientes')}>← VOLTAR</button>
+          <button
+            className="edit-secondary-button"
+            onClick={() => router.push("/pacientes")}
+          >
+            ← VOLTAR
+          </button>
         </section>
       </main>
-    )
+    );
   }
 
-  const delivered = patient.dischargeStatus === 'ENTREGUE'
-  const discharged = patient.dischargeStatus === 'ALTA'
-  const surgeryDone = patient.status === 'CONFIRMADO'
+  const delivered = patient.dischargeStatus === "ENTREGUE";
+  const discharged = patient.dischargeStatus === "ALTA";
+  const surgeryDone = patient.status === "CONFIRMADO";
 
   return (
     <main className="patient-op-screen">
       <section className="patient-op-card">
         <header className="patient-op-header">
-          <button className="back-arrow" onClick={() => router.push('/pacientes')}>←</button>
+          <button
+            className="back-arrow"
+            onClick={() => router.push("/pacientes")}
+          >
+            ←
+          </button>
           <div className="patient-op-header-copy">
             <span className="patient-op-kicker">PACIENTE</span>
-            <h1>{patient.patientName || 'Paciente sem nome'} • FICHA Nº {String(patient.number).padStart(3, '0')}</h1>
+            <h1>
+              {patient.patientName || "Paciente sem nome"} • FICHA Nº{" "}
+              {String(patient.number).padStart(3, "0")}
+            </h1>
           </div>
           <button
             className="edit-secondary-button"
-            onClick={() => router.push(`/pacientes/${patient.number}/editar`)}
+            onClick={() =>
+              router.push(`/pacientes/${patientPath(patient)}/editar`)
+            }
           >
             EDITAR CADASTRO
           </button>
@@ -80,16 +110,33 @@ export default function PatientOperationalPage() {
 
         <section className="patient-op-summary">
           <div className="patient-op-animal">
-            <span className="patient-op-icon">{patient.species === 'FELINO' ? '🐱' : '🐶'}</span>
+            <span className="patient-op-icon">
+              {patient.species === "FELINO" ? "🐱" : "🐶"}
+            </span>
             <div>
-              <strong>{patient.species || '-'} • {patient.sex || '-'}</strong>
-              <span>{patient.weight ? `${patient.weight} kg` : 'Peso não informado'}</span>
+              <strong>
+                {patient.species || "-"} • {patient.sex || "-"}
+              </strong>
+              <span>
+                {patient.weight ? `${patient.weight} kg` : "Peso não informado"}
+              </span>
             </div>
           </div>
 
-          <div><small>TUTOR</small><strong>{patient.tutorName || '-'}</strong></div>
-          <div><small>LOCAL</small><strong>{patient.location || '-'} {patient.locationNumber || ''}</strong></div>
-          <div><small>PROCEDIMENTOS</small><strong>{(patient.procedures || []).join(' • ') || '-'}</strong></div>
+          <div>
+            <small>TUTOR</small>
+            <strong>{patient.tutorName || "-"}</strong>
+          </div>
+          <div>
+            <small>LOCAL</small>
+            <strong>
+              {patient.location || "-"} {patient.locationNumber || ""}
+            </strong>
+          </div>
+          <div>
+            <small>PROCEDIMENTOS</small>
+            <strong>{(patient.procedures || []).join(" • ") || "-"}</strong>
+          </div>
         </section>
 
         <section className="patient-op-status">
@@ -101,7 +148,9 @@ export default function PatientOperationalPage() {
                 <span>AGUARDANDO PROCEDIMENTO</span>
                 <small>O procedimento ainda não foi confirmado.</small>
               </div>
-              <button onClick={() => setShowSurgery(true)}>CONFIRMAR CIRURGIA</button>
+              <button onClick={() => setShowSurgery(true)}>
+                CONFIRMAR CIRURGIA
+              </button>
             </div>
           )}
 
@@ -109,9 +158,13 @@ export default function PatientOperationalPage() {
             <div className="op-state postop-op">
               <div>
                 <span>✓ CIRURGIA CONFIRMADA</span>
-                <small>Cirurgia confirmada • paciente aguardando a etapa LIBERAR.</small>
+                <small>
+                  Cirurgia confirmada • paciente aguardando a etapa LIBERAR.
+                </small>
               </div>
-              <button onClick={() => setShowDischarge(true)}>LIBERAR ALTA</button>
+              <button onClick={() => setShowDischarge(true)}>
+                LIBERAR ALTA
+              </button>
             </div>
           )}
 
@@ -119,9 +172,17 @@ export default function PatientOperationalPage() {
             <div className="op-state discharge-op">
               <div>
                 <span>✓ DE ALTA</span>
-                <small>Alta às {formatTime(patient.dischargedAt)} • a próxima etapa é a tela SAÍDA.</small>
+                <small>
+                  Alta às {formatTime(patient.dischargedAt)} • a próxima etapa é
+                  a tela SAÍDA.
+                </small>
               </div>
-              <button className="go-exit-button" onClick={() => router.push('/saida')}>IR PARA SAÍDA</button>
+              <button
+                className="go-exit-button"
+                onClick={() => router.push("/saida")}
+              >
+                IR PARA SAÍDA
+              </button>
             </div>
           )}
 
@@ -129,19 +190,39 @@ export default function PatientOperationalPage() {
             <div className="op-state delivered-op">
               <div>
                 <span>✓ ENTREGUE</span>
-                <small>Paciente entregue às {formatTime(patient.deliveredAt)}.</small>
+                <small>
+                  Paciente entregue às {formatTime(patient.deliveredAt)}.
+                </small>
               </div>
             </div>
           )}
         </section>
 
         <section className="patient-op-info">
-          <div><small>VETERINÁRIO DO PROCEDIMENTO</small><strong>{patient.veterinarian || 'Não informado'}</strong></div>
-          <div><small>VETERINÁRIO DA ALTA</small><strong>{patient.dischargeVeterinarian || '-'}</strong></div>
-          <div><small>OBSERVAÇÕES DA ENTRADA</small><strong>{patient.notes || '-'}</strong></div>
-          <div><small>OBSERVAÇÕES DO PROCEDIMENTO</small><strong>{patient.surgeryNotes || '-'}</strong></div>
-          <div className="patient-op-important-note"><small>OBSERVAÇÕES DA ALTA</small><strong>{patient.dischargeNotes || '-'}</strong></div>
-          <div><small>ADICIONAIS CIRÚRGICOS</small><strong>{(patient.surgeryExtras || []).join(' • ') || '-'}</strong></div>
+          <div>
+            <small>VETERINÁRIO DO PROCEDIMENTO</small>
+            <strong>{patient.veterinarian || "Não informado"}</strong>
+          </div>
+          <div>
+            <small>VETERINÁRIO DA ALTA</small>
+            <strong>{patient.dischargeVeterinarian || "-"}</strong>
+          </div>
+          <div>
+            <small>OBSERVAÇÕES DA ENTRADA</small>
+            <strong>{patient.notes || "-"}</strong>
+          </div>
+          <div>
+            <small>OBSERVAÇÕES DO PROCEDIMENTO</small>
+            <strong>{patient.surgeryNotes || "-"}</strong>
+          </div>
+          <div className="patient-op-important-note">
+            <small>OBSERVAÇÕES DA ALTA</small>
+            <strong>{patient.dischargeNotes || "-"}</strong>
+          </div>
+          <div>
+            <small>ADICIONAIS CIRÚRGICOS</small>
+            <strong>{(patient.surgeryExtras || []).join(" • ") || "-"}</strong>
+          </div>
         </section>
       </section>
 
@@ -161,5 +242,5 @@ export default function PatientOperationalPage() {
         />
       )}
     </main>
-  )
+  );
 }

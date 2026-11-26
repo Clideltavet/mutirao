@@ -1,0 +1,18 @@
+{
+  "postgres": "PostgreSQL 17.12 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0, 64-bit",
+  "passed": [
+    "incremental migration repeatable; all existing payloads and passwords unchanged",
+    "catalog and configuration confirmed",
+    "continuous 500/501 and 16 concurrent connections, no duplicate allocation",
+    "lost acknowledgement retry uses same receipt and number",
+    "two edits to same revision: exactly one committed; obsolete clocks irrelevant",
+    "duplicate old numbers: edit affects only selected identity, history price preserved",
+    "admin sequence revision rejects stale config; reset preserves old numbers",
+    "authorized soft delete persists payload; stale update and recovery cannot resurrect",
+    "recovery inserts missing record without overwriting, renumbering or importing snapshots",
+    "surgery, separate discharge, delivery and rehospitalization with audit",
+    "legacy bulk writers blocked at database; failed transaction consumes no number",
+    "catalog price change never rewrites patient snapshot; exact stored decimal"
+  ],
+  "date": "2026-11-26T16:39:46.889Z"
+}

@@ -1,0 +1,18 @@
+{
+  "passed": [
+    "real login, HttpOnly session and authenticated read",
+    "anonymous and reception cannot write; snapshot POST disabled; CSRF origin blocked",
+    "two independent browser devices submit simultaneously through real Next API",
+    "offline save has no success; persisted draft survives reload and reconnect without duplication",
+    "committed response lost: browser retries same persisted request after refresh",
+    "legacy localStorage retained and never imported by automatic/manual synchronization",
+    "edit route addresses identity; finance price survives editing old patient",
+    "CMS reports, export, permissions and all existing screens render",
+    "admin user/role operations require revisions and block privilege escalation",
+    "financial CSV matches confirmed historical total; no current-price repricing",
+    "paired TV works after logout, cannot edit finance or create patients"
+  ],
+  "errors": [],
+  "date": "2026-11-26T16:40:12.858Z",
+  "note": "No API/auth/database mocks. Only network fault injection uses route interception after real commit."
+}

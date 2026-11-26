@@ -1,0 +1,9 @@
+{
+  "database_scenarios_passed": 12,
+  "browser_scenarios_passed": 11,
+  "build": "passed",
+  "production_dependency_advisories": 0,
+  "production_accessed": false,
+  "published": false,
+  "source_commit": "552412a8730f2ea67ccbffc92ac44e2a4b5bb974"
+}

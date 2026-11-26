@@ -1,0 +1,436 @@
+[
+  {
+    "file": ".gitignore",
+    "original_sha256": "f6d25344822c9ad00a235fd97eb53fa6cac26fa5e38817d7bfa66f71b028d14c",
+    "final_sha256": "f6d25344822c9ad00a235fd97eb53fa6cac26fa5e38817d7bfa66f71b028d14c",
+    "status": "inalterado",
+    "review": "Leitura de cache/fluxo revisado; componentes e rotas existentes mantidos."
+  },
+  {
+    "file": "ALTERACOES-v1.18.0.md",
+    "original_sha256": "8c2fc4208b9bf2cae0db227c542235fc2d977e6ef73e7e753dfb75b7f6e03415",
+    "final_sha256": "8c2fc4208b9bf2cae0db227c542235fc2d977e6ef73e7e753dfb75b7f6e03415",
+    "status": "inalterado",
+    "review": "Documentação histórica mantida ou atualizada; novos relatórios são referência da entrega."
+  },
+  {
+    "file": "README.md",
+    "original_sha256": "2e57bb3f52ed7779ffc62fc1a466a70a3d53252b3aad78612f0932d9c46ecfa7",
+    "final_sha256": "deb910206963f306214de381fd2da4bce90b4fbcb0f16f5e0efaf48bf66297f6",
+    "status": "alterado",
+    "review": "Documentação histórica mantida ou atualizada; novos relatórios são referência da entrega."
+  },
+  {
+    "file": "app/api/admin/roles/route.js",
+    "original_sha256": "2777e18b0c3722999ae2568e5818c99969071a76f9b9ea2b0368ca71eb2aa053",
+    "final_sha256": "b57516fb661fa1d8b79fa6ad0d57827ff833618a1ce3b3a8b949ca260712f4a5",
+    "status": "alterado",
+    "review": "Revisão obrigatória, autorização e operações transacionais; sequência serializada."
+  },
+  {
+    "file": "app/api/admin/settings/sequence/route.js",
+    "original_sha256": "be1483b3b52374d4554c0d77fe4cf9407f54f47759ebea8087b0a87e09e7e572",
+    "final_sha256": "93704e2f343c3df9c1c101b37d2c0cb4a741cd4e201309d73fa7c86f99576c2f",
+    "status": "alterado",
+    "review": "Revisão obrigatória, autorização e operações transacionais; sequência serializada."
+  },
+  {
+    "file": "app/api/admin/users/route.js",
+    "original_sha256": "be08c519cb8ef9e07ee1863b2ab23a31bce4b4dd1ebddc616b3e7f08088d374e",
+    "final_sha256": "0b2766125f4602e4100d044d242004f52ef2e785384f5bc6df2e2f3e014a44eb",
+    "status": "alterado",
+    "review": "Revisão obrigatória, autorização e operações transacionais; sequência serializada."
+  },
+  {
+    "file": "app/api/auth/login/route.js",
+    "original_sha256": "ee30138fe03e33c2c07e7e5a39e29c9ef9ee47751c8fffb0c4ef2ee876176fac",
+    "final_sha256": "1ea0f68ce567b33b6bedabbad044432ca1f578395ceb1ce0739b98d8fc851bc4",
+    "status": "alterado",
+    "review": "Sessões preservadas; cookies assíncronos; limite de tentativas; nenhuma troca automática de senha."
+  },
+  {
+    "file": "app/api/auth/logout/route.js",
+    "original_sha256": "cc8162d8b0be939fc9a3b7ce66bf39d94886fd752969c2151e35fb2642569100",
+    "final_sha256": "4d0b34fb00307bbd7bcc9713b2b38556f65c3266d924306ef1c80d28a60ad751",
+    "status": "alterado",
+    "review": "Sessões preservadas; cookies assíncronos; limite de tentativas; nenhuma troca automática de senha."
+  },
+  {
+    "file": "app/api/auth/me/route.js",
+    "original_sha256": "cc2270bbefaf7f715d1f03e0c012fa09b96c8e1be96167c248e0b5242740cb9a",
+    "final_sha256": "d4a47496b889b8693553b82a7313061a24ec7672372510d7cf823dd4433325d7",
+    "status": "alterado",
+    "review": "Sessões preservadas; cookies assíncronos; limite de tentativas; nenhuma troca automática de senha."
+  },
+  {
+    "file": "app/api/patients/entry/route.js",
+    "original_sha256": "906a9a1c6d2f5750879504faf7803bbb82ea0e9af87db7b5e807dd602c9f3fb5",
+    "final_sha256": "8315434a12b54cfae3047f90e76ae6db8cd0a424fa93b25e43f3d0a664155644",
+    "status": "alterado",
+    "review": "Caminhos de cadastro unificados em comando atômico e idempotente."
+  },
+  {
+    "file": "app/api/patients/route.js",
+    "original_sha256": "67440f40806dd650d71d3f7b7af53d1301cb908dd0e0a6094e6339356cc1a108",
+    "final_sha256": "b3df9f6c80974fbebacede4791de46dc72c3ce45473104c6a33f44884c3dc0b4",
+    "status": "alterado",
+    "review": "Caminhos de cadastro unificados em comando atômico e idempotente."
+  },
+  {
+    "file": "app/api/sync/shared/route.js",
+    "original_sha256": "6586c716179ccb32439c3ed21165d1c008a977242d7786547dbd656b5db61547",
+    "final_sha256": "0060a5fd800b92430806b1b21c7737a3f7c9eaa03be81335a33abed28df07031",
+    "status": "alterado",
+    "review": "Sincronização pública por snapshots substituída por leitura autenticada; POST legado recusado."
+  },
+  {
+    "file": "app/cirurgia/page.js",
+    "original_sha256": "90cc38cdc8ef59090f19e6dd86999f074b37b316c183e3b416dcceee921f506e",
+    "final_sha256": "c09e6b38601973c916f08f2b6cc824aee142fa7e938ddc681d2cd5ee94b89ba6",
+    "status": "alterado",
+    "review": "Identidade única e revisão do registro; transição confirmada antes de fechar modal."
+  },
+  {
+    "file": "app/configuracoes/page.js",
+    "original_sha256": "ae24d33ecebb9a78a0f29b33ee3463c097b52e6673f071c9e4de7244f48f3711",
+    "final_sha256": "52cdd1570b4967b15c53b08b31922e503f2afaada1dcada8745ec44aab47f610",
+    "status": "alterado",
+    "review": "Sequência/configurações no banco com revisão; autorização inicial da TV."
+  },
+  {
+    "file": "app/entrada/page.js",
+    "original_sha256": "057a960d68e6df7fc65b9a0cae1d1c0ebda16b27b4e803d47f9edc1330c539d1",
+    "final_sha256": "d0f399c37035f5d0ad811cfcd808e1df5a3a5a44d7bfca491c93a5acf7276aab",
+    "status": "alterado",
+    "review": "Rascunho persistente, ID estável, confirmação de commit e reenvio seguro."
+  },
+  {
+    "file": "app/globals.css",
+    "original_sha256": "fffde4aa2100ffa7f06bf002bfc7c734178d54c464ec67dce83cf8fee8068857",
+    "final_sha256": "fffde4aa2100ffa7f06bf002bfc7c734178d54c464ec67dce83cf8fee8068857",
+    "status": "inalterado",
+    "review": "3866 linhas de estilo preservadas byte a byte; não contém imports/URLs externos."
+  },
+  {
+    "file": "app/layout.js",
+    "original_sha256": "9855f094cda63458aa4b91fe5976beedcea93d10515b2e346a64c5145d8b7b4f",
+    "final_sha256": "7b4cc39d2153195ff4a3cad0daf6af680f1c5897462b926873eb246dff4b2bd0",
+    "status": "alterado",
+    "review": "Leitura de cache/fluxo revisado; componentes e rotas existentes mantidos."
+  },
+  {
+    "file": "app/master/cadastros/adicionais/page.js",
+    "original_sha256": "22e4c22894d8ce107bc6bf9fdcb48a8e8812fccddd714a5e75589d8cd6012ea0",
+    "final_sha256": "50f4b8c0484da4f7b4da0275989bbe498258e7c16c0125b84e1822cbbc3b9c76",
+    "status": "alterado",
+    "review": "Cadastros/configurações com confirmação no servidor; permissões e revisão."
+  },
+  {
+    "file": "app/master/cadastros/clientes/page.js",
+    "original_sha256": "ec63da9042fd785dfaf5b7bfa36bb642e4c0804d29fed1a0e3acf68a628b89ca",
+    "final_sha256": "73a55fb91de3450241b58984d644dd32a82ffeda3adecbca64a4d00dbeec9799",
+    "status": "alterado",
+    "review": "Cadastros/configurações com confirmação no servidor; permissões e revisão."
+  },
+  {
+    "file": "app/master/cadastros/funcionarios/page.js",
+    "original_sha256": "6d08c5006f23698f92634a8c6a8da293d2e22328cc032b5787da59149976d34d",
+    "final_sha256": "823452afcb4137443ea5ab970cd30f3393c84dad16bdbd66e512ab0ebc2e5a1d",
+    "status": "alterado",
+    "review": "Cadastros/configurações com confirmação no servidor; permissões e revisão."
+  },
+  {
+    "file": "app/master/cadastros/funcoes/page.js",
+    "original_sha256": "6be692ccb2c0a29711c5293a51f59d4a814205d7e0a08fdbc40837f06efcca05",
+    "final_sha256": "abb1e59599378f53dce0aab8d533849eca3f282a85aed7d681b6fa097dde3e53",
+    "status": "alterado",
+    "review": "Cadastros/configurações com confirmação no servidor; permissões e revisão."
+  },
+  {
+    "file": "app/master/cadastros/page.js",
+    "original_sha256": "e66a096587a3549ef4c6ea26558f147319947e3ea6ad21b6acbb6cae5fe757e7",
+    "final_sha256": "aa4855830ed80cea81072080be7ed39a841847afda23a5e3b045c630b9df73b3",
+    "status": "alterado",
+    "review": "Cadastros/configurações com confirmação no servidor; permissões e revisão."
+  },
+  {
+    "file": "app/master/cadastros/procedimentos/page.js",
+    "original_sha256": "e958e31e73177b403651ea128bef4e8113097a12b1a34c4664b8d4c32ab0d326",
+    "final_sha256": "28d47597285662ea5b655b5029c96a90059c92fae575b8574a3f909d1c40310f",
+    "status": "alterado",
+    "review": "Cadastros/configurações com confirmação no servidor; permissões e revisão."
+  },
+  {
+    "file": "app/master/cadastros/veterinarios/page.js",
+    "original_sha256": "9e3cc5b52265716ba30030565bf4d06329ca9a87e5bca0b47ddea6f3184aceb2",
+    "final_sha256": "28d8c4c5781487caf23af9b32b75ac5d06308462a347ab05249fc887da955df3",
+    "status": "alterado",
+    "review": "Cadastros/configurações com confirmação no servidor; permissões e revisão."
+  },
+  {
+    "file": "app/master/configuracoes/page.js",
+    "original_sha256": "7e156c132533763d9a87562310874f818973e9152eb238e08e12ac1e06c16309",
+    "final_sha256": "b9b5fdd86f10da155ef9b184dcb8f7e5ab67464d312e5f9b3254e2131df4d6a8",
+    "status": "alterado",
+    "review": "Sequência/configurações no banco com revisão; autorização inicial da TV."
+  },
+  {
+    "file": "app/master/layout.js",
+    "original_sha256": "dfd9fb38bafd9d5f5d83d3714a10e7a88c5a7bebad30f4f206726e9714d7f81c",
+    "final_sha256": "0b6d894a872caf0b0b95e52675dfa1d9dd2975c11d36acf5da71b7c437979c5f",
+    "status": "alterado",
+    "review": "Gate por permissão e carga confirmada antes de exibir dados; cache isolado por aba."
+  },
+  {
+    "file": "app/master/login/page.js",
+    "original_sha256": "43de199b724214a6f62cf890c46a3982ae4fcf43db44b9873ff00bc33bc8c33a",
+    "final_sha256": "2e51c6764cfadc01dbabe13c1a6018f1b3ecfb61bcd0b4c56e5fd28c134bff8e",
+    "status": "alterado",
+    "review": "Leitura de cache/fluxo revisado; componentes e rotas existentes mantidos."
+  },
+  {
+    "file": "app/master/page.js",
+    "original_sha256": "558cb16d7f63b1861f88ecd8787efa33b633435cce473a7e59a0eec963dd6b1a",
+    "final_sha256": "cb54eb18d7ce1a7d487ae2c9a9f0deb7c606f9230ab3602f42539d44776ca4c3",
+    "status": "alterado",
+    "review": "Leitura de cache/fluxo revisado; componentes e rotas existentes mantidos."
+  },
+  {
+    "file": "app/master/relatorios/page.js",
+    "original_sha256": "9d3540298d3f78cbe16bde788277c8065c309fb7daee826554303e1c43eb0df0",
+    "final_sha256": "4d00fe0db9993958a6555d3cb3f7325760dda018201900b7b90541029028802f",
+    "status": "alterado",
+    "review": "Somente cache confirmado, valores históricos, exclusão lógica confirmada e CSV protegido."
+  },
+  {
+    "file": "app/pacientes/[id]/editar/page.js",
+    "original_sha256": "442b53eb7c4ed0f7389934f8514c2e10eba2b96fdd5ed8870a4d6f96fcacb140",
+    "final_sha256": "1c79ca9629666a4222a14c0f4b455e0b71695c00cbdbe693a9cc0999d098c05e",
+    "status": "alterado",
+    "review": "Identidade única e revisão do registro; transição confirmada antes de fechar modal."
+  },
+  {
+    "file": "app/pacientes/[id]/page.js",
+    "original_sha256": "4fa65f4950650983f54fa20393e1952ffce0d6d606fced3c1af30e7333d0fc11",
+    "final_sha256": "f563bcc750801418264a889a75e2f8a946ef7ea8262cc0e1817bc734a5cf68cf",
+    "status": "alterado",
+    "review": "Identidade única e revisão do registro; transição confirmada antes de fechar modal."
+  },
+  {
+    "file": "app/pacientes/page.js",
+    "original_sha256": "fd5f991ee14b36e2f322955e37c6168ea3e7a070fc548bf54df18d1a0190fcb0",
+    "final_sha256": "6514da043e389d3113efc9015ed4fbd31f37e29d7ee67858adfa840bc3d887b4",
+    "status": "alterado",
+    "review": "Identidade única e revisão do registro; transição confirmada antes de fechar modal."
+  },
+  {
+    "file": "app/page.js",
+    "original_sha256": "b9c96b2e7a7ae71cef9bc5b1bde9ba14c310053bb1430476888758e31631c0c9",
+    "final_sha256": "711bce4b0b27047f48242a396b46b2f571fa77d5f83f771deae82d9914b13310",
+    "status": "alterado",
+    "review": "Leitura de cache/fluxo revisado; componentes e rotas existentes mantidos."
+  },
+  {
+    "file": "app/recepcao/page.js",
+    "original_sha256": "2faed221ea88e475a3725dd121b5e79dccbb0691b737c532fd87ce5e5e75dfdc",
+    "final_sha256": "c8684931188aa1c0d58dd7a4cc8f791e1eb143447ebdeebc5caad44423f514d9",
+    "status": "alterado",
+    "review": "Leitura de cache/fluxo revisado; componentes e rotas existentes mantidos."
+  },
+  {
+    "file": "app/saida/page.js",
+    "original_sha256": "3755887017c206d983e14492d9b83a277d2fd9bf65d6d204943eed36ed2ac0d7",
+    "final_sha256": "ba5e0b06102a8df4a2fcf25cf8487073eee791e2ddcddf41fe3fcf470ca8d449",
+    "status": "alterado",
+    "review": "Identidade única e revisão do registro; transição confirmada antes de fechar modal."
+  },
+  {
+    "file": "components/AppAccessGate.js",
+    "original_sha256": "7aa4806d6972b5c11d783d747f93d57ae14fb0e9ab9e61424f258438d2a71a4e",
+    "final_sha256": "09f11285c5e69f45790fe6fce78f657b760a153f590933f2f845ba538e3931e4",
+    "status": "alterado",
+    "review": "Gate por permissão e carga confirmada antes de exibir dados; cache isolado por aba."
+  },
+  {
+    "file": "components/ClientModal.js",
+    "original_sha256": "a8ea1daf579757c00b9e34bdf2d009869ff29f66d8fa52fdf91ed1790b1d1da5",
+    "final_sha256": "426bad86f8bf0bf415e60e2bc71574a99978079c84fa4168e29ff4d15481a072",
+    "status": "alterado",
+    "review": "Leitura de cache/fluxo revisado; componentes e rotas existentes mantidos."
+  },
+  {
+    "file": "components/DischargeModal.js",
+    "original_sha256": "9a2857a6bb7362d9d468b838b209bf901619ea28534f5189a639b7b511513fa3",
+    "final_sha256": "9c8589be742696070e394d18be8b7585c1f42adc70f6e715d61c85427b0098b1",
+    "status": "alterado",
+    "review": "Identidade única e revisão do registro; transição confirmada antes de fechar modal."
+  },
+  {
+    "file": "components/PatientRecordModal.js",
+    "original_sha256": "dacde32d2b580d84a7da5be756f54a19012e83e282268536326464771b06879b",
+    "final_sha256": "99a4554d47a21284940efd6f55a49c83a2443587ce2735e345d7dc6cb5dc4187",
+    "status": "alterado",
+    "review": "Leitura de cache/fluxo revisado; componentes e rotas existentes mantidos."
+  },
+  {
+    "file": "components/PhoneInput.js",
+    "original_sha256": "eac6bbd7a9047ca929dca9d01e59929624eaed3efee54b9c29b4e161ebac3593",
+    "final_sha256": "8f2d5c757746cb70cb3401da025bb02f6e4f7a8f7f026073726ac60e833e7bff",
+    "status": "alterado",
+    "review": "Leitura de cache/fluxo revisado; componentes e rotas existentes mantidos."
+  },
+  {
+    "file": "components/SharedDataSync.js",
+    "original_sha256": "d5b837c31178a4176f07fe87708873f6ba96e100725b609b02dc8131f8930774",
+    "final_sha256": "a93709661fd01fba48387c04fccb97e60fbbbfd6116fed221b4aedb9b8939d2f",
+    "status": "alterado",
+    "review": "Leitura apenas; nunca envia localStorage ou limpa fila antiga."
+  },
+  {
+    "file": "components/SurgeryConfirmModal.js",
+    "original_sha256": "988cfa6bd74cfe7a1e6a6e915aed5294083cb8bc08656b88a668a2f1e8cd809a",
+    "final_sha256": "cfde8300fe8418a3505ccdfc1cdf871885eccf3ec98bf236e3f696f5043cedc8",
+    "status": "alterado",
+    "review": "Identidade única e revisão do registro; transição confirmada antes de fechar modal."
+  },
+  {
+    "file": "components/SyncStatus.js",
+    "original_sha256": "8143536bbcd74f15473b1576944a78b00688edb5d5d28836bd3102ee235ff08f",
+    "final_sha256": "11b4431dee09dfbb7685dd3897f18302fe0ca286d1915eb955c96fa7f9a958df",
+    "status": "alterado",
+    "review": "Leitura de cache/fluxo revisado; componentes e rotas existentes mantidos."
+  },
+  {
+    "file": "components/auditUtils.js",
+    "original_sha256": "3fb154468152033e23afe2ff6660735d16e03f2935f3996cd24dfe9daa484647",
+    "final_sha256": "1259954691dbafb44b7fdce7c7622d14fb6ed0e407dff2653ff0de7fa86c2d4f",
+    "status": "alterado",
+    "review": "Auditoria nova produzida no servidor junto à operação; histórico antigo preservado."
+  },
+  {
+    "file": "components/authUtils.js",
+    "original_sha256": "4a1c9a986468893bdded3aa8fe3a3a26c49466994d5281b3777bbbffaba69108",
+    "final_sha256": "79126dca798d182b1db622f14a9eca47a5b3ea4a473d6c6f4d06587f9c3eab99",
+    "status": "alterado",
+    "review": "Gate por permissão e carga confirmada antes de exibir dados; cache isolado por aba."
+  },
+  {
+    "file": "components/clientUtils.js",
+    "original_sha256": "ea3487e4140b28aa7fc5530c7cf9267d2ce8d31b5fb4f64c7612cfd450e93f5b",
+    "final_sha256": "d5fbe8be759e08c9cf4981def019d8b2924fd904cf361ed1ed959da73d650971",
+    "status": "alterado",
+    "review": "Leitura de cache/fluxo revisado; componentes e rotas existentes mantidos."
+  },
+  {
+    "file": "components/procedureUtils.js",
+    "original_sha256": "c4fd0c77f00d806c2585e38bde1ccb48e60552e0191088362ed418a6219acfbb",
+    "final_sha256": "378e7ad53d8923f03250f0feb7279dfdd586454b2f7e1cc534f64f2bc729196d",
+    "status": "alterado",
+    "review": "Não reprecifica histórico pelo catálogo atual; soma monetária em centavos."
+  },
+  {
+    "file": "components/roleUtils.js",
+    "original_sha256": "7ac3b911a4069e4f7a2f43c2ac4c1a422c50d4fc7f8e4a6330a3d8182db1fa92",
+    "final_sha256": "8517b72234503c6411ca00a4e241b8f8f5e09bbe24c4894ffead090d7b1d39dc",
+    "status": "alterado",
+    "review": "Leitura de cache/fluxo revisado; componentes e rotas existentes mantidos."
+  },
+  {
+    "file": "components/sequenceState.js",
+    "original_sha256": "01fa43c15b49f65339018278da0e76a8dad54a3063fc096b94115f17e48d0ad1",
+    "final_sha256": "d88caa699c49f6253b690fd52c29528399a7b3385c2b4b7d40bb5f0444cd2d8d",
+    "status": "alterado",
+    "review": "Chaves legadas preservadas, escrita em lote desativada e sequência confirmada por revisão."
+  },
+  {
+    "file": "components/syncMerge.js",
+    "original_sha256": "becf3e3c56fb6b3ef6f6b09e5b61eb925cf3269f1bed3cc818490ae6dd7a5e7e",
+    "final_sha256": "2188228e9ad5afbdde6881f8164b83a8882051dac8cab8e5531f596357a3fc81",
+    "status": "alterado",
+    "review": "Chaves legadas preservadas, escrita em lote desativada e sequência confirmada por revisão."
+  },
+  {
+    "file": "components/syncUtils.js",
+    "original_sha256": "2def9ba3abbabc510a5f97f6a3954ce30b2195a7f95ca7c898061768db9c12df",
+    "final_sha256": "15348388c44f657bb460b279abb0961d178998fdedb8b3eb4760d2c190831c3d",
+    "status": "alterado",
+    "review": "Chaves legadas preservadas, escrita em lote desativada e sequência confirmada por revisão."
+  },
+  {
+    "file": "lib/db.js",
+    "original_sha256": "81a8d0281dff2b56d6fa270f627518afa754c94d7060a8329b280a8f135c273a",
+    "final_sha256": "6a4a173dda1a2c504f3ff8cdb5a2cb2c1aa6d500fbd8ddab7dcb4dfcabe5e711",
+    "status": "alterado",
+    "review": "Autenticação/criptografia verificadas; SQL parametrizado; adaptador isolado guardado."
+  },
+  {
+    "file": "lib/password.js",
+    "original_sha256": "ce77ce12738ce1f352a0267c51350f310057a3affe4460d7fde693874944f950",
+    "final_sha256": "f721486e3b9d07396ba4fc9a99ffdaa803668668c3a4788363893db3eb36699d",
+    "status": "alterado",
+    "review": "Autenticação/criptografia verificadas; SQL parametrizado; adaptador isolado guardado."
+  },
+  {
+    "file": "lib/serverAuth.js",
+    "original_sha256": "0ea7fd4fa51b36cf26b6e5ac1dc0d78891cdf260a34a8a41f5f5585c97811166",
+    "final_sha256": "a5fedaee3e3c4edf179de1de67e0d5939eff231fd626bbeee334278accc06973",
+    "status": "alterado",
+    "review": "Autenticação/criptografia verificadas; SQL parametrizado; adaptador isolado guardado."
+  },
+  {
+    "file": "migrations/001_atomic_sync.sql",
+    "original_sha256": "902097c4f41771f3d038a6f7714ef17a15dfed27fbc9241f703cd2a60e60fc6f",
+    "final_sha256": "3ef03cd5a4dc41d8f093cab89201335ced86d131b18bf786276d2dd0dd6e4029",
+    "status": "alterado",
+    "review": "Migração antiga preservada como referência e bloqueada para execução."
+  },
+  {
+    "file": "package-lock.json",
+    "original_sha256": "87bb9efd70796430eaf8accc1656dd7bd09fb23bf27fead7b22d6a3b5befd227",
+    "final_sha256": "1294a2abed8d0c8496edd346fdc1c1b634d199418b2c141ed7088da039dc2337",
+    "status": "alterado",
+    "review": "Versões alinhadas; Next atualizado; testes e dependências declarados."
+  },
+  {
+    "file": "package.json",
+    "original_sha256": "1ee3109451b47a60ed4441f64848c31d47b16609c265efd1f5b95dff361af941",
+    "final_sha256": "4fd96c68146c1805b23507cafe99f72793c738d72846349d4ba46f8493aaae33",
+    "status": "alterado",
+    "review": "Versões alinhadas; Next atualizado; testes e dependências declarados."
+  },
+  {
+    "file": "public/delta-vet-logo.jpg",
+    "original_sha256": "4f8cab408a4a576c36b4ff5c769afaada1940c1000987c2c5f79da3348c8e4e9",
+    "final_sha256": "4f8cab408a4a576c36b4ff5c769afaada1940c1000987c2c5f79da3348c8e4e9",
+    "status": "inalterado",
+    "review": "Logotipo preservado byte a byte; sem alteração visual."
+  },
+  {
+    "file": "scripts/db-init.mjs",
+    "original_sha256": "f9e02c678bb56f730a391ac68a3b9593887457c39be0e8397f361d413abcb321",
+    "final_sha256": "7245c7eb291f5132b5fd595d0170435ca50b954d95371a90447c4fe153b3a8ef",
+    "status": "alterado",
+    "review": "Inicialização perigosa bloqueada; migração incremental explícita e transacional."
+  },
+  {
+    "file": "scripts/db-migrate.mjs",
+    "original_sha256": "21d43336002e7ed079c077bcfa1d07f2a1579a544673846c3365b46b51d037bb",
+    "final_sha256": "890ffbfe06bf525e6f441fccdce71a6a0fb6d7685031ea677f12d98a9d193ee6",
+    "status": "alterado",
+    "review": "Inicialização perigosa bloqueada; migração incremental explícita e transacional."
+  },
+  {
+    "file": "tests/browser.mjs",
+    "original_sha256": "db29cd3bb230aaec4150feb72172730938ec9194d60bd1c6fb4d17a323d40cf2",
+    "final_sha256": "5cde26a7d5bd75bd930051a2df1d3676c6ae0268041b5c324dbe14fa9ddcd439",
+    "status": "alterado",
+    "review": "Substituído teste com API interceptada/dependência ausente por PostgreSQL e API reais."
+  },
+  {
+    "file": "tests/regression.test.mjs",
+    "original_sha256": "b72ddf3c7c096d7b427a87188d13fab6aebc9e476f231c41bb7508a8561bcc27",
+    "final_sha256": "f4b6bf07fcb71151a034dfa428803153bdfeca6883bd90b2d07049b00782da70",
+    "status": "alterado",
+    "review": "Substituído teste com API interceptada/dependência ausente por PostgreSQL e API reais."
+  }
+]

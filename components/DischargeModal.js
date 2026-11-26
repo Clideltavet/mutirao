@@ -1,64 +1,50 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { auditAction, getCurrentActor } from './auditUtils'
+import { updatePatient, read, keys } from "./confirmedStore";
+import { useEffect, useState } from "react";
+import { auditAction, getCurrentActor } from "./auditUtils";
 
 function readVets() {
   try {
-    const v = JSON.parse(localStorage.getItem('deltaVetVeterinarians') || '[]')
-    return Array.isArray(v) ? v : []
-  } catch { return [] }
+    const v = JSON.parse(
+      sessionStorage.getItem("deltaVetConfirmedVeterinarians") || "[]",
+    );
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
 }
 
 export default function DischargeModal({ patient, onClose, onSaved }) {
-  const [vets, setVets] = useState([])
-  const [vet, setVet] = useState(patient?.dischargeVeterinarian || patient?.veterinarian || '')
-  const [notes, setNotes] = useState(patient?.dischargeNotes || '')
-  const [error, setError] = useState('')
+  const [vets, setVets] = useState([]);
+  const [vet, setVet] = useState(
+    patient?.dischargeVeterinarian || patient?.veterinarian || "",
+  );
+  const [notes, setNotes] = useState(patient?.dischargeNotes || "");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => setVets(readVets()), [])
+  useEffect(() => setVets(readVets()), []);
 
-  if (!patient) return null
+  if (!patient) return null;
 
-  function save() {
-    setError('')
-    let all = []
-    try { all = JSON.parse(localStorage.getItem('deltaVetPatients') || '[]') } catch {}
-    if (!Array.isArray(all)) all = []
-
-    const at = new Date().toISOString()
-    const actor = getCurrentActor({
-      fallbackName: 'TV Sala de Cirurgia',
-      fallbackUsername: 'tv-cirurgia',
-      fallbackType: 'TV',
-    })
-    const updated = all.map(p => Number(p.number) === Number(patient.number) ? {
-      ...p,
-      dischargeStatus: 'ALTA',
-      dischargedAt: at,
-            _syncUpdatedAt: at,
-      dischargeVeterinarian: vet || '',
-      dischargeNotes: notes.trim(),
-      timeline: [
-        ...(Array.isArray(p.timeline) ? p.timeline : []),
-        { type: 'ALTA', at, veterinarian: vet || '', notes: notes.trim(), actor }
-      ]
-    } : p)
-
-    localStorage.setItem('deltaVetPatients', JSON.stringify(updated))
-
-    const savedPatient = updated.find(p => Number(p.number) === Number(patient.number))
-    auditAction({
-      action: 'ALTA',
-      category: 'ALTA',
-      patient: savedPatient,
-      actor,
-      at,
-      details: `Alta liberada${vet ? ` • Veterinário autorizador: ${vet}` : ''}${notes.trim() ? ` • ${notes.trim()}` : ''}`,
-    })
-
-    onSaved?.(updated)
-    onClose?.()
+  async function save() {
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      await updatePatient(
+        patient,
+        { dischargeVeterinarian: vet || "", dischargeNotes: notes.trim() },
+        "ALTA",
+      );
+      onSaved?.(read(keys.patients));
+      onClose?.();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -66,18 +52,28 @@ export default function DischargeModal({ patient, onClose, onSaved }) {
       <section className="surgery-modal">
         <h2>LIBERAR ALTA</h2>
         <div className="animal-summary">
-          <strong>Ficha nº {String(patient.number).padStart(3,'0')}</strong>
-          <span>{patient.species} • {patient.sex}</span>
-          <span>Tutor: {patient.tutorName || '-'}</span>
-          <span>Procedimento: {(patient.procedures || []).join(' / ') || '-'}</span>
-          <span>Veterinário do procedimento: {patient.veterinarian || '-'}</span>
+          <strong>Ficha nº {String(patient.number).padStart(3, "0")}</strong>
+          <span>
+            {patient.species} • {patient.sex}
+          </span>
+          <span>Tutor: {patient.tutorName || "-"}</span>
+          <span>
+            Procedimento: {(patient.procedures || []).join(" / ") || "-"}
+          </span>
+          <span>
+            Veterinário do procedimento: {patient.veterinarian || "-"}
+          </span>
         </div>
 
         <label className="modal-field">
           <span>Veterinário que autorizou a alta (opcional)</span>
-          <select value={vet} onChange={e => setVet(e.target.value)}>
+          <select value={vet} onChange={(e) => setVet(e.target.value)}>
             <option value="">Não informar</option>
-            {vets.map(v => <option key={v} value={v}>{v}</option>)}
+            {vets.map((v) => (
+              <option key={v} value={v}>
+                {v}
+              </option>
+            ))}
           </select>
         </label>
 
@@ -85,19 +81,26 @@ export default function DischargeModal({ patient, onClose, onSaved }) {
           <span>Observações da alta</span>
           <textarea
             value={notes}
-            onChange={e => setNotes(e.target.value)}
+            onChange={(e) => setNotes(e.target.value)}
             placeholder="Digite observações importantes sobre a alta do paciente..."
           />
-          <small>Estas observações ficarão visíveis para toda a equipe e serão lembradas na entrega.</small>
+          <small>
+            Estas observações ficarão visíveis para toda a equipe e serão
+            lembradas na entrega.
+          </small>
         </label>
 
         {error && <div className="modal-error">{error}</div>}
 
         <div className="modal-actions">
-          <button className="modal-secondary" onClick={onClose}>CANCELAR</button>
-          <button className="modal-primary" onClick={save}>LIBERAR ALTA</button>
+          <button className="modal-secondary" onClick={onClose}>
+            CANCELAR
+          </button>
+          <button className="modal-primary" disabled={saving} onClick={save}>
+            LIBERAR ALTA
+          </button>
         </div>
       </section>
     </div>
-  )
+  );
 }

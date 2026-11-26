@@ -1,161 +1,132 @@
-'use client'
+"use client";
 
-import { useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import ClientModal from '../../../../components/ClientModal'
-import { buildClientsFromPatients, readClients, saveClients } from '../../../../components/clientUtils'
-import { auditAction } from '../../../../components/auditUtils'
-import { clientRecordKey, queueSyncDelete } from '../../../../components/syncUtils'
+import {
+  saveRecord,
+  deleteRecord,
+  refreshConfirmed,
+  confirmedAction,
+} from "../../../../components/confirmedStore";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import ClientModal from "../../../../components/ClientModal";
+import {
+  buildClientsFromPatients,
+  readClients,
+  saveClients,
+} from "../../../../components/clientUtils";
+import { auditAction } from "../../../../components/auditUtils";
+import {
+  clientRecordKey,
+  queueSyncDelete,
+} from "../../../../components/syncUtils";
 
 function readPatients() {
   try {
-    const value = JSON.parse(localStorage.getItem('deltaVetPatients') || '[]')
-    return Array.isArray(value) ? value : []
+    const value = JSON.parse(
+      sessionStorage.getItem("deltaVetConfirmedPatients") || "[]",
+    );
+    return Array.isArray(value) ? value : [];
   } catch {
-    return []
+    return [];
   }
 }
 
 export default function ClientsPage() {
-  const router = useRouter()
-  const [clients, setClients] = useState([])
-  const [query, setQuery] = useState('')
-  const [editing, setEditing] = useState(null)
-  const [showModal, setShowModal] = useState(false)
-  const [patients, setPatients] = useState([])
+  const router = useRouter();
+  const [clients, setClients] = useState([]);
+  const [query, setQuery] = useState("");
+  const [editing, setEditing] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [patients, setPatients] = useState([]);
 
   useEffect(() => {
-    let current = readClients()
+    let current = readClients();
 
-    if (!current.length) {
-      current = buildClientsFromPatients()
-      if (current.length) saveClients(current)
-    }
-
-    setClients(current)
-    setPatients(readPatients())
-  }, [])
+    setClients(current);
+    setPatients(readPatients());
+    const refresh = () => {
+      setClients(readClients());
+      setPatients(readPatients());
+    };
+    window.addEventListener("deltaVetRemoteSync", refresh);
+    return () => window.removeEventListener("deltaVetRemoteSync", refresh);
+  }, []);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase()
+    const q = query.trim().toLowerCase();
 
     return clients
-      .filter(client => {
-        if (!q) return true
+      .filter((client) => {
+        if (!q) return true;
         return `${client.name} ${client.phone} ${client.cpf} ${client.email}`
           .toLowerCase()
-          .includes(q)
+          .includes(q);
       })
-      .sort((a,b) => {
-        if (!!a.archived !== !!b.archived) return a.archived ? 1 : -1
-        return String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR')
-      })
-  }, [clients, query])
+      .sort((a, b) => {
+        if (!!a.archived !== !!b.archived) return a.archived ? 1 : -1;
+        return String(a.name || "").localeCompare(
+          String(b.name || ""),
+          "pt-BR",
+        );
+      });
+  }, [clients, query]);
 
-  function saveClient(client) {
-    const current = readClients()
-    const exists = current.some(item => item.id === client.id)
-    const next = exists
-      ? current.map(item => item.id === client.id ? client : item)
-      : [...current, client]
-
-    saveClients(next)
-
-    auditAction({
-      action: exists ? 'CLIENTE_EDITADO' : 'CLIENTE_CADASTRADO',
-      category: 'CLIENTE',
-      details: `${exists ? 'Cliente editado' : 'Cliente cadastrado'} no CMS: ${client.name || '-'}`,
-      metadata: { clientId: client.id, clientName: client.name || '' },
-    })
-
-    setClients(next)
-    setEditing(null)
-    setShowModal(false)
+  async function saveClient(client) {
+    await saveRecord("clients", client, client);
+    await refreshConfirmed();
+    setClients(readClients());
+    setEditing(null);
+    setShowModal(false);
   }
-
-  function persistClients(next) {
-    saveClients(next)
-    setClients(next)
-  }
-
-  function archiveClient(client) {
-    const linked = countAnimals(client)
-    if (!window.confirm(
-      linked
-        ? `Este tutor possui ${linked} registro(s) de animal vinculado(s). Arquivar o tutor mantém todo o histórico. Deseja continuar?`
-        : 'Arquivar este tutor?'
-    )) return
-
-    const at = new Date().toISOString()
-    const next = clients.map(item =>
-      item.id === client.id
-        ? { ...item, archived: true, archivedAt: at, updatedAt: at, _syncUpdatedAt: at }
-        : item
-    )
-
-    persistClients(next)
-    auditAction({
-      action: 'CLIENTE_ARQUIVADO',
-      category: 'CLIENTE',
-      details: `Tutor arquivado: ${client.name || '-'} • ${linked} registro(s) vinculado(s)`,
-      metadata: { clientId: client.id, clientName: client.name || '', linkedPatients: linked },
-    })
-  }
-
-  function reactivateClient(client) {
-    const at = new Date().toISOString()
-    const next = clients.map(item =>
-      item.id === client.id
-        ? { ...item, archived: false, archivedAt: null, updatedAt: at, _syncUpdatedAt: at }
-        : item
-    )
-
-    persistClients(next)
-    auditAction({
-      action: 'CLIENTE_REATIVADO',
-      category: 'CLIENTE',
-      details: `Tutor reativado: ${client.name || '-'}`,
-      metadata: { clientId: client.id, clientName: client.name || '' },
-    })
-  }
-
-  function removeClient(client) {
-    const linked = countAnimals(client)
-
-    if (linked > 0) {
-      const first = window.confirm(
-        `ATENÇÃO: ${client.name} possui ${linked} registro(s) de animal vinculado(s).
-
-Excluir o cadastro do tutor NÃO apagará esses animais nem o histórico.
-
-Deseja continuar?`
+  async function archiveClient(client) {
+    if (!window.confirm("Arquivar o tutor mantendo o histórico?")) return;
+    if (
+      await confirmedAction(() =>
+        saveRecord("clients", client, { ...client, archived: true }),
       )
-      if (!first) return
-
-      const confirmation = window.prompt('Para excluir somente o cadastro do tutor, digite EXCLUIR:')
-      if (String(confirmation || '').trim().toUpperCase() !== 'EXCLUIR') return
-    } else {
-      if (!window.confirm(`Excluir o tutor ${client.name}?`)) return
+    ) {
+      await refreshConfirmed();
+      setClients(readClients());
     }
-
-    queueSyncDelete('clients', clientRecordKey(client))
-    const next = clients.filter(item => item.id !== client.id)
-    persistClients(next)
-
-    auditAction({
-      action: 'CLIENTE_EXCLUIDO',
-      category: 'CLIENTE',
-      details: `Cadastro do tutor excluído: ${client.name || '-'} • histórico dos animais preservado • ${linked} registro(s) vinculado(s)`,
-      metadata: { clientId: client.id, clientName: client.name || '', linkedPatients: linked },
-    })
+  }
+  async function reactivateClient(client) {
+    if (
+      await confirmedAction(() =>
+        saveRecord("clients", client, { ...client, archived: false }),
+      )
+    ) {
+      await refreshConfirmed();
+      setClients(readClients());
+    }
+  }
+  async function removeClient(client) {
+    if (
+      !window.confirm(
+        "Excluir somente este cadastro? O histórico dos animais será preservado.",
+      )
+    )
+      return;
+    if (
+      await confirmedAction(() =>
+        deleteRecord(
+          "clients",
+          client,
+          "Exclusão de cadastro confirmada no CMS",
+        ),
+      )
+    ) {
+      setClients(readClients());
+    }
   }
 
   function countAnimals(client) {
-    return patients.filter(patient =>
-      patient.clientId === client.id ||
-      (!patient.clientId &&
-        patient.tutorName?.trim().toLowerCase() === client.name.trim().toLowerCase())
-    ).length
+    return patients.filter(
+      (patient) =>
+        patient.clientId === client.id ||
+        (!patient.clientId &&
+          patient.tutorName?.trim().toLowerCase() ===
+            client.name.trim().toLowerCase()),
+    ).length;
   }
 
   return (
@@ -164,12 +135,14 @@ Deseja continuar?`
         <div>
           <span className="cms-kicker">CADASTROS</span>
           <h1>CLIENTES / TUTORES</h1>
-          <p>Cadastre, pesquise e edite os dados dos responsáveis pelos animais.</p>
+          <p>
+            Cadastre, pesquise e edite os dados dos responsáveis pelos animais.
+          </p>
         </div>
 
         <button
           className="cms-exit-button"
-          onClick={() => router.push('/master/cadastros')}
+          onClick={() => router.push("/master/cadastros")}
         >
           ← VOLTAR
         </button>
@@ -179,15 +152,15 @@ Deseja continuar?`
         <div className="clients-toolbar">
           <input
             value={query}
-            onChange={e => setQuery(e.target.value)}
+            onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por nome, telefone, CPF ou e-mail..."
           />
 
           <button
             className="cms-primary-button"
             onClick={() => {
-              setEditing(null)
-              setShowModal(true)
+              setEditing(null);
+              setShowModal(true);
             }}
           >
             + NOVO CLIENTE
@@ -207,58 +180,66 @@ Deseja continuar?`
               </tr>
             </thead>
             <tbody>
-              {filtered.length ? filtered.map(client => (
-                <tr key={client.id}>
-                  <td>
-                    <strong>{client.name}</strong>
-                    {client.archived && <span className="client-archived-badge">ARQUIVADO</span>}
-                  </td>
-                  <td>{client.phone || '-'}</td>
-                  <td>{client.cpf || '-'}</td>
-                  <td>{client.email || '-'}</td>
-                  <td>{countAnimals(client)}</td>
-                  <td>
-                    <div className="client-row-actions">
-                      {!client.archived && (
-                        <button
-                          className="client-edit-button"
-                          onClick={() => {
-                            setEditing(client)
-                            setShowModal(true)
-                          }}
-                        >
-                          EDITAR
-                        </button>
+              {filtered.length ? (
+                filtered.map((client) => (
+                  <tr key={client.id}>
+                    <td>
+                      <strong>{client.name}</strong>
+                      {client.archived && (
+                        <span className="client-archived-badge">ARQUIVADO</span>
                       )}
+                    </td>
+                    <td>{client.phone || "-"}</td>
+                    <td>{client.cpf || "-"}</td>
+                    <td>{client.email || "-"}</td>
+                    <td>{countAnimals(client)}</td>
+                    <td>
+                      <div className="client-row-actions">
+                        {!client.archived && (
+                          <button
+                            className="client-edit-button"
+                            onClick={() => {
+                              setEditing(client);
+                              setShowModal(true);
+                            }}
+                          >
+                            EDITAR
+                          </button>
+                        )}
 
-                      {client.archived ? (
-                        <button
-                          className="client-reactivate-button"
-                          onClick={() => reactivateClient(client)}
-                        >
-                          REATIVAR
-                        </button>
-                      ) : countAnimals(client) > 0 ? (
-                        <button
-                          className="client-archive-button"
-                          onClick={() => archiveClient(client)}
-                        >
-                          ARQUIVAR
-                        </button>
-                      ) : null}
+                        {client.archived ? (
+                          <button
+                            className="client-reactivate-button"
+                            onClick={() => reactivateClient(client)}
+                          >
+                            REATIVAR
+                          </button>
+                        ) : countAnimals(client) > 0 ? (
+                          <button
+                            className="client-archive-button"
+                            onClick={() => archiveClient(client)}
+                          >
+                            ARQUIVAR
+                          </button>
+                        ) : null}
 
-                      <button
-                        className="client-delete-button"
-                        onClick={() => removeClient(client)}
-                      >
-                        {countAnimals(client) > 0 ? 'EXCLUIR CADASTRO' : 'EXCLUIR'}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )) : (
+                        <button
+                          className="client-delete-button"
+                          onClick={() => removeClient(client)}
+                        >
+                          {countAnimals(client) > 0
+                            ? "EXCLUIR CADASTRO"
+                            : "EXCLUIR"}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
                 <tr>
-                  <td colSpan="6" className="cms-empty">Nenhum cliente encontrado.</td>
+                  <td colSpan="6" className="cms-empty">
+                    Nenhum cliente encontrado.
+                  </td>
                 </tr>
               )}
             </tbody>
@@ -270,12 +251,12 @@ Deseja continuar?`
         <ClientModal
           client={editing}
           onClose={() => {
-            setShowModal(false)
-            setEditing(null)
+            setShowModal(false);
+            setEditing(null);
           }}
           onSave={saveClient}
         />
       )}
     </main>
-  )
+  );
 }

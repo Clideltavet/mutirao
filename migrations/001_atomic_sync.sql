@@ -1,3 +1,5 @@
+-- Archived migration: superseded by 002. Do not execute.
+DO $$ BEGIN RAISE EXCEPTION 'Migração 001 desativada. Leia docs/BACKUP-IMPLANTACAO.md e use somente 002.'; END $$;
 -- Incremental: existing payloads, identities, passwords and audit remain untouched.
 CREATE TABLE IF NOT EXISTS shared_record_versions (
   id BIGSERIAL PRIMARY KEY, kind TEXT NOT NULL, record_key TEXT NOT NULL,

@@ -1,66 +1,63 @@
-export function onlyDigits(value = '') {
-  return String(value).replace(/\D/g, '')
+export function onlyDigits(value = "") {
+  return String(value).replace(/\D/g, "");
 }
 
-export function formatCpf(value = '') {
-  const digits = onlyDigits(value).slice(0, 11)
-  if (digits.length <= 3) return digits
-  if (digits.length <= 6) return `${digits.slice(0,3)}.${digits.slice(3)}`
-  if (digits.length <= 9) return `${digits.slice(0,3)}.${digits.slice(3,6)}.${digits.slice(6)}`
-  return `${digits.slice(0,3)}.${digits.slice(3,6)}.${digits.slice(6,9)}-${digits.slice(9,11)}`
+export function formatCpf(value = "") {
+  const digits = onlyDigits(value).slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+  if (digits.length <= 9)
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9, 11)}`;
 }
 
-export function normalizeEmail(value = '') {
-  return String(value).trim().toLowerCase().slice(0, 120)
+export function normalizeEmail(value = "") {
+  return String(value).trim().toLowerCase().slice(0, 120);
 }
 
 export function readClients() {
   try {
-    const value = JSON.parse(localStorage.getItem('deltaVetClients') || '[]')
-    return Array.isArray(value) ? value : []
+    const value = JSON.parse(
+      sessionStorage.getItem("deltaVetConfirmedClients") || "[]",
+    );
+    return Array.isArray(value) ? value : [];
   } catch {
-    return []
+    return [];
   }
 }
 
-export function saveClients(clients) {
-  const next = (Array.isArray(clients) ? clients : []).map(client => ({
-    ...client,
-    _syncUpdatedAt:
-      client._syncUpdatedAt ||
-      client.updatedAt ||
-      client.createdAt ||
-      new Date().toISOString(),
-  }))
-  localStorage.setItem('deltaVetClients', JSON.stringify(next))
+export function saveClients() {
+  throw new Error("Use saveRecord para gravação individual confirmada.");
 }
 
 export function buildClientsFromPatients() {
-  let patients = []
+  let patients = [];
   try {
-    patients = JSON.parse(localStorage.getItem('deltaVetPatients') || '[]')
+    patients = JSON.parse(
+      sessionStorage.getItem("deltaVetConfirmedPatients") || "[]",
+    );
   } catch {}
-  if (!Array.isArray(patients)) patients = []
+  if (!Array.isArray(patients)) patients = [];
 
-  const map = new Map()
+  const map = new Map();
 
   patients.forEach((patient) => {
-    const name = String(patient.tutorName || '').trim()
-    if (!name) return
-    const key = name.toLowerCase()
+    const name = String(patient.tutorName || "").trim();
+    if (!name) return;
+    const key = name.toLowerCase();
 
     if (!map.has(key)) {
       map.set(key, {
         id: `legacy-${key}`,
         name,
-        phone: patient.phone || '',
-        cpf: patient.tutorCpf || '',
-        email: patient.tutorEmail || '',
+        phone: patient.phone || "",
+        cpf: patient.tutorCpf || "",
+        email: patient.tutorEmail || "",
         createdAt: patient.createdAt || new Date().toISOString(),
         updatedAt: null,
-      })
+      });
     }
-  })
+  });
 
-  return [...map.values()]
+  return [...map.values()];
 }

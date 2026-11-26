@@ -1,31 +1,35 @@
-'use client'
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { loginApi, meApi, setAdminSession } from '../../../components/authUtils'
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  loginApi,
+  meApi,
+  setAdminSession,
+} from "../../../components/authUtils";
 
 export default function MasterLogin() {
-  const router = useRouter()
-  const [username,setUsername] = useState('')
-  const [password,setPassword] = useState('')
-  const [error,setError] = useState('')
+  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    meApi().then(user => {
-      if (user?.accesses?.includes('MASTER')) {
-        setAdminSession(user)
-        router.replace('/master')
+    meApi().then((user) => {
+      if (user?.accesses?.includes("MASTER")) {
+        setAdminSession(user);
+        router.replace("/master");
       }
-    })
-  }, [router])
+    });
+  }, [router]);
 
   async function login() {
-    setError('')
+    setError("");
     try {
-      const user = await loginApi(username, password, 'MASTER')
-      setAdminSession(user)
-      router.replace('/master')
+      const user = await loginApi(username, password, "MASTER");
+      setAdminSession(user);
+      router.replace("/master");
     } catch (error) {
-      setError(error.message || 'Usuário ou senha do administrador inválidos.')
+      setError(error.message || "Usuário ou senha do administrador inválidos.");
     }
   }
 
@@ -34,14 +38,19 @@ export default function MasterLogin() {
       <section className="vetcore-login-shell">
         <div className="vetcore-login-brand">
           <div className="vetcore-brand-logo-wrap">
-            <img src="/delta-vet-logo.jpg" alt="Delta Vet" className="vetcore-brand-logo" />
+            <img
+              src="/delta-vet-logo.jpg"
+              alt="Delta Vet"
+              className="vetcore-brand-logo"
+            />
           </div>
 
           <div className="vetcore-brand-copy">
             <span className="vetcore-login-kicker">CONTROLE DELTA VET</span>
             <h1>Painel administrativo e relatórios.</h1>
             <p>
-              Gerencie usuários, cadastros, permissões, relatórios e configurações.
+              Gerencie usuários, cadastros, permissões, relatórios e
+              configurações.
             </p>
           </div>
 
@@ -64,7 +73,13 @@ export default function MasterLogin() {
               <span className="vetcore-input-icon">👤</span>
               <input
                 value={username}
-                onChange={e => setUsername(e.target.value.replace(/[^a-zA-Z0-9._-]/g,'').toLowerCase())}
+                onChange={(e) =>
+                  setUsername(
+                    e.target.value
+                      .replace(/[^a-zA-Z0-9._-]/g, "")
+                      .toLowerCase(),
+                  )
+                }
                 autoComplete="username"
                 placeholder="Usuário admin"
               />
@@ -78,8 +93,8 @@ export default function MasterLogin() {
               <input
                 type="password"
                 value={password}
-                onChange={e => setPassword(e.target.value.slice(0,64))}
-                onKeyDown={e => e.key === 'Enter' && login()}
+                onChange={(e) => setPassword(e.target.value.slice(0, 64))}
+                onKeyDown={(e) => e.key === "Enter" && login()}
                 autoComplete="current-password"
                 placeholder="Digite sua senha"
               />
@@ -88,14 +103,17 @@ export default function MasterLogin() {
 
           {error && <div className="vetcore-login-error">{error}</div>}
 
-          <button className="vetcore-login-button vetcore-admin-login-button" onClick={login}>
+          <button
+            className="vetcore-login-button vetcore-admin-login-button"
+            onClick={login}
+          >
             ENTRAR NO PAINEL
           </button>
 
           <button
             className="vetcore-cms-button"
             type="button"
-            onClick={() => router.push('/')}
+            onClick={() => router.push("/")}
           >
             ← VOLTAR AO TABLET
           </button>
@@ -107,5 +125,5 @@ export default function MasterLogin() {
         </div>
       </section>
     </main>
-  )
+  );
 }

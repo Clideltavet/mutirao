@@ -1,73 +1,38 @@
-# Controle Delta Vet v1.17.6 — ajustes solicitados em 25/11/2026
+# Controle Delta Vet 1.19.0 — integridade de dados
 
-## 1. Ordem dos pacientes depois da cirurgia
+Correção sobre o projeto existente. Não publicar sem ensaio em homologação e backup restaurado/conferido. Não executar `db:init` ou a migração 001. Não usar conexão de produção nos testes.
 
-Na tela **Pacientes**, as fichas agora ficam em dois blocos:
+## Documentação da entrega
+- `docs/AUDITORIA-INICIAL.md`: diagnóstico antes das alterações.
+- `docs/RELATORIO-FINAL.md`: causas, solução, limites e resultados.
+- `docs/ARQUIVOS.md`: inventário por arquivo e alterações.
+- `docs/BACKUP-IMPLANTACAO.md`: backup, recuperação, GitHub, implantação e rollback.
+- `migrations/002_confirmed_operations.sql`: migração incremental transacional.
+- `tests/evidence/`: evidências reais de banco, navegador, build e dependências.
 
-1. fichas que ainda aguardam confirmação da cirurgia;
-2. fichas com cirurgia confirmada, no final da lista.
+## Requisitos
+Node.js 20.9+ (validado em Node 24); Next.js 16.4.6; PostgreSQL/Neon. Configurar `DATABASE_URL` no ambiente de execução. Preview deve usar branch Neon separada. Não colocar `.env` no ZIP/Git.
 
-Quando uma cirurgia é confirmada, a ficha sai do primeiro bloco e vai automaticamente para o bloco final.
-Dentro dos dois blocos, as fichas continuam em **ordem numérica crescente**. Alta e entrega não fazem a ficha voltar para cima.
+```bash
+npm ci
+npm run build
+npm start
+```
 
-Exemplo:
+Não há migração automática no build ou no start. A configuração de produção deve ser feita somente conforme o procedimento de implantação.
 
-Aguardando: 012, 014, 017
-Cirurgia confirmada: 003, 009, 011
+## Testes isolados
+Em Linux/WSL x64, `npm test` inicia PostgreSQL local descartável em diretório temporário, cria dados fictícios, executa testes SQL concorrentes, reinicia o banco, faz build e testa as telas/API reais em Chromium. Não lê `.env` nem aceita destino remoto. Portas 55432 e 3000 precisam estar livres. `npm run test:db` executa só a parte SQL. Pode definir `DELTA_PG_BIN` com binários PostgreSQL locais e `CHROMIUM_PATH` com Chromium compatível.
 
-Ao confirmar a ficha 014, ela vai para o grupo das confirmadas e esse grupo continua numericamente ordenado.
+## Comportamento
+- Neon é autoridade; sincronizar significa ler dados confirmados, nunca enviar todo o navegador.
+- Cadastro individual com ID estável/reenvio idempotente; número é atribuído em transação com histórico/auditoria.
+- Alterações exigem revisão; conflitos retornam HTTP 409 e pedem nova leitura/revisão humana.
+- Ficha é identificada por record_key. Números antigos e reinício por mutirão são preservados.
+- Exclusão confirmada pelo administrador é lógica, com motivo, tombstone permanente e histórico recuperável.
+- LocalStorage legado nunca é limpo, importado ou sobrescrito automaticamente. Cache confirmado fica por aba; comandos individuais ficam preservados no diário local.
+- TV precisa ser pareada uma vez no navegador pelo administrador; depois funciona sem login diário por 90 dias, limitada a cirurgia/alta.
+- Preços históricos não são recalculados pelo catálogo atual. Registros antigos sem preço são explicitamente apontados no relatório.
+- Usuários e funções têm revisão e transação; permissões não são elevadas por um usuário sem autoridade. Senhas existentes são preservadas.
 
-A TV da cirurgia também mantém as listas CIRURGIAS e LIBERAR em ordem numérica.
-
-## 2. Veterinário não é mais obrigatório para alta
-
-No modal **Liberar Alta**:
-
-- o veterinário passou a ser opcional;
-- existe a opção **Não informar**;
-- a alta pode ser concluída normalmente sem escolher veterinário;
-- se um veterinário for informado, ele continua registrado no prontuário e na auditoria.
-
-## 3. Relatórios — Observações / Alterações
-
-Em **Relatórios e Financeiro → Pacientes**, foi adicionada uma coluna entre:
-
-**Procedimentos → Observações / Alterações → Valor**
-
-Ela mostra de forma compacta:
-
-- observação da entrada;
-- observação do procedimento;
-- observação da alta;
-- observação da entrega;
-- quantidade de alterações registradas na linha do tempo.
-
-As observações/alterações também entraram na pesquisa e na exportação CSV.
-
-O detalhamento completo continua disponível em **VER FICHA**.
-
-## 4. Exclusão dos registros de teste
-
-Para Administrador, em:
-
-**Relatórios e Financeiro → Pacientes**
-
-agora aparece diretamente na linha o botão:
-
-**EXCLUIR TESTE**
-
-Não é mais necessário entrar primeiro em VER FICHA para encontrar a exclusão.
-
-A exclusão continua com duas confirmações para evitar acidente.
-Depois da confirmação:
-
-- o paciente sai imediatamente da lista;
-- deixa de contabilizar nos valores do dia, período, histórico e pesquisa;
-- deixa de contabilizar por tutor e procedimento;
-- entra na fila de exclusão do Neon;
-- o sistema força uma sincronização manual imediatamente;
-- a exclusão continua protegida pelos tombstones para não reaparecer por outro aparelho antigo.
-
-O botão dentro de **VER FICHA** também continua disponível para Administrador.
-
-Versão: 1.17.6
+Não se trata de monitoramento contínuo contratado: manutenção futura depende de novos incidentes, logs e versões disponibilizados. Esta entrega não modifica a infraestrutura da cliente automaticamente.

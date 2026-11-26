@@ -1,0 +1,117 @@
+warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/api/admin/roles/route.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/api/admin/settings/sequence/route.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/api/admin/users/route.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/api/auth/login/route.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/api/auth/logout/route.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/api/auth/me/route.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/api/patients/entry/route.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/api/patients/route.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/api/sync/shared/route.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/cirurgia/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/configuracoes/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/entrada/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/layout.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/master/cadastros/adicionais/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/master/cadastros/clientes/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/master/cadastros/funcionarios/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/master/cadastros/funcoes/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/master/cadastros/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/master/cadastros/procedimentos/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/master/cadastros/veterinarios/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/master/configuracoes/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/master/layout.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/master/login/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/master/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/master/relatorios/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/pacientes/[id]/editar/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/pacientes/[id]/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/pacientes/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/recepcao/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/saida/page.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'components/AppAccessGate.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'components/ClientModal.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'components/DischargeModal.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'components/PatientRecordModal.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'components/PhoneInput.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'components/SharedDataSync.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'components/SurgeryConfirmModal.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'components/SyncStatus.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'components/auditUtils.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'components/authUtils.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'components/clientUtils.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'components/procedureUtils.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'components/roleUtils.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'components/sequenceState.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'components/syncMerge.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'components/syncUtils.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'lib/db.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'lib/password.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'lib/serverAuth.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'migrations/001_atomic_sync.sql', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package-lock.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'scripts/db-init.mjs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'scripts/db-migrate.mjs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/browser.mjs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/regression.test.mjs', LF will be replaced by CRLF the next time Git touches it
+ README.md                                  |  111 [32m+[m[31m-[m
+ app/api/admin/roles/route.js               |   84 [32m+[m[31m-[m
+ app/api/admin/settings/sequence/route.js   |  110 [32m+[m[31m-[m
+ app/api/admin/users/route.js               |  125 [32m+[m[31m--[m
+ app/api/auth/login/route.js                |  108 [32m+[m[31m-[m
+ app/api/auth/logout/route.js               |   36 [32m+[m[31m-[m
+ app/api/auth/me/route.js                   |   19 [32m+[m[31m-[m
+ app/api/patients/entry/route.js            |   89 [32m+[m[31m-[m
+ app/api/patients/route.js                  |   24 [32m+[m[31m-[m
+ app/api/sync/shared/route.js               |  289 [32m+[m[31m-----[m
+ app/cirurgia/page.js                       |  546 [32m++++++[m[31m----[m
+ app/configuracoes/page.js                  |  177 [32m+++[m[31m-[m
+ app/entrada/page.js                        |  547 [32m+++++[m[31m-----[m
+ app/layout.js                              |   21 [32m+[m[31m-[m
+ app/master/cadastros/adicionais/page.js    |   91 [32m+[m[31m-[m
+ app/master/cadastros/clientes/page.js      |  353 [32m+++[m[31m----[m
+ app/master/cadastros/funcionarios/page.js  |  278 [32m+++[m[31m--[m
+ app/master/cadastros/funcoes/page.js       |  177 [32m++[m[31m--[m
+ app/master/cadastros/page.js               |   61 [32m+[m[31m-[m
+ app/master/cadastros/procedimentos/page.js |  202 [32m++[m[31m--[m
+ app/master/cadastros/veterinarios/page.js  |   91 [32m+[m[31m-[m
+ app/master/configuracoes/page.js           |  175 [32m++[m[31m--[m
+ app/master/layout.js                       |   74 [32m+[m[31m-[m
+ app/master/login/page.js                   |   72 [32m+[m[31m-[m
+ app/master/page.js                         |  121 [32m++[m[31m-[m
+ app/master/relatorios/page.js              |  930 [32m+++++++++++[m[31m------[m
+ app/pacientes/[id]/editar/page.js          |  303 [32m++++[m[31m--[m
+ app/pacientes/[id]/page.js                 |  193 [32m+++[m[31m-[m
+ app/pacientes/page.js                      |  337 [32m++++[m[31m---[m
+ app/page.js                                |  200 [32m++[m[31m--[m
+ app/recepcao/page.js                       |  213 [32m++[m[31m--[m
+ app/saida/page.js                          |  652 [32m+++++++[m[31m-----[m
+ components/AppAccessGate.js                |   88 [32m+[m[31m-[m
+ components/ClientModal.js                  |   69 [32m+[m[31m-[m
+ components/DischargeModal.js               |  129 [32m+[m[31m--[m
+ components/PatientRecordModal.js           |  144 [32m++[m[31m-[m
+ components/PhoneInput.js                   |   25 [32m+[m[31m-[m
+ components/SharedDataSync.js               |  214 [32m+[m[31m---[m
+ components/SurgeryConfirmModal.js          |  200 [32m++[m[31m--[m
+ components/SyncStatus.js                   |  154 [32m+[m[31m--[m
+ components/auditUtils.js                   |   99 [32m+[m[31m-[m
+ components/authUtils.js                    |   55 [32m+[m[31m-[m
+ components/clientUtils.js                  |   69 [32m+[m[31m-[m
+ components/procedureUtils.js               |  173 [32m++[m[31m--[m
+ components/roleUtils.js                    |   60 [32m+[m[31m-[m
+ components/sequenceState.js                |   51 [32m+[m[31m-[m
+ components/syncMerge.js                    |   49 [32m+[m[31m-[m
+ components/syncUtils.js                    |   56 [32m+[m[31m-[m
+ lib/db.js                                  |   34 [32m+[m[31m-[m
+ lib/password.js                            |   32 [32m+[m[31m-[m
+ lib/serverAuth.js                          |   32 [32m+[m[31m-[m
+ migrations/001_atomic_sync.sql             |    2 [32m+[m
+ package-lock.json                          | 1514 [32m+++++++++++++++++++++++++[m[31m---[m
+ package.json                               |   27 [32m+[m[31m-[m
+ scripts/db-init.mjs                        |  398 [32m+[m[31m-------[m
+ scripts/db-migrate.mjs                     |   54 [32m+[m[31m-[m
+ tests/browser.mjs                          |   74 [32m+[m[31m-[m
+ tests/regression.test.mjs                  |   85 [32m+[m[31m-[m
+ 58 files changed, 6214 insertions(+), 4482 deletions(-)

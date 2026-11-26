@@ -1,60 +1,63 @@
-'use client'
+"use client";
 
-import { useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { clearAdminSession, logoutApi } from '../../components/authUtils'
-import SyncStatus from '../../components/SyncStatus'
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { clearAdminSession, logoutApi } from "../../components/authUtils";
+import SyncStatus from "../../components/SyncStatus";
 
 function readPatients() {
   try {
-    const v = JSON.parse(localStorage.getItem('deltaVetPatients') || '[]')
-    return Array.isArray(v) ? v : []
+    const v = JSON.parse(
+      sessionStorage.getItem("deltaVetConfirmedPatients") || "[]",
+    );
+    return Array.isArray(v) ? v : [];
   } catch {
-    return []
+    return [];
   }
 }
 
 function localDateKey(value = new Date()) {
-  const d = value instanceof Date ? value : new Date(value)
-  if (Number.isNaN(d.getTime())) return ''
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 export default function MasterPage() {
-  const router = useRouter()
-  const [patients, setPatients] = useState([])
+  const router = useRouter();
+  const [patients, setPatients] = useState([]);
 
   useEffect(() => {
-    const refresh = () => setPatients(readPatients())
-    refresh()
-    const timer = setInterval(refresh, 1500)
-    const onStorage = e => e.key === 'deltaVetPatients' && refresh()
-    window.addEventListener('storage', onStorage)
+    const refresh = () => setPatients(readPatients());
+    refresh();
+    const timer = setInterval(refresh, 1500);
+    const onStorage = (e) => e.key === "deltaVetConfirmedPatients" && refresh();
+    window.addEventListener("storage", onStorage);
     return () => {
-      clearInterval(timer)
-      window.removeEventListener('storage', onStorage)
-    }
-  }, [])
+      clearInterval(timer);
+      window.removeEventListener("storage", onStorage);
+    };
+  }, []);
 
-  const today = localDateKey()
+  const today = localDateKey();
   const todayPatients = useMemo(
-    () => patients.filter(p => localDateKey(p.createdAt) === today),
-    [patients, today]
-  )
+    () => patients.filter((p) => localDateKey(p.createdAt) === today),
+    [patients, today],
+  );
 
   const stats = {
     total: todayPatients.length,
-    surgery: todayPatients.filter(p => p.status === 'CONFIRMADO').length,
-    discharge: todayPatients.filter(p => p.dischargeStatus === 'ALTA').length,
-    delivered: todayPatients.filter(p => p.dischargeStatus === 'ENTREGUE').length,
-  }
+    surgery: todayPatients.filter((p) => p.status === "CONFIRMADO").length,
+    discharge: todayPatients.filter((p) => p.dischargeStatus === "ALTA").length,
+    delivered: todayPatients.filter((p) => p.dischargeStatus === "ENTREGUE")
+      .length,
+  };
 
-  const todayLabel = new Date().toLocaleDateString('pt-BR', {
-    weekday: 'long',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  })
+  const todayLabel = new Date().toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 
   return (
     <main className="cms-screen cms-dashboard-page">
@@ -63,8 +66,9 @@ export default function MasterPage() {
           <span className="cms-dashboard-kicker">CONTROLE DELTA VET</span>
           <h1>PAINEL CMS</h1>
           <p>
-            Relatórios, cadastros e configurações do sistema em um painel central,
-            com visual mais profissional para a gestão do fluxo cirúrgico.
+            Relatórios, cadastros e configurações do sistema em um painel
+            central, com visual mais profissional para a gestão do fluxo
+            cirúrgico.
           </p>
 
           <div className="cms-dashboard-meta">
@@ -80,10 +84,10 @@ export default function MasterPage() {
         </div>
 
         <div className="cms-dashboard-hero-actions">
-                  <SyncStatus />
+          <SyncStatus />
           <button
             className="cms-dashboard-system-button"
-            onClick={() => router.push('/')}
+            onClick={() => router.push("/")}
           >
             ← VOLTAR AO SISTEMA
           </button>
@@ -91,8 +95,8 @@ export default function MasterPage() {
           <button
             className="cms-dashboard-logout-button"
             onClick={() => {
-              clearAdminSession()
-              router.replace('/master/login')
+              clearAdminSession();
+              router.replace("/master/login");
             }}
           >
             SAIR
@@ -146,7 +150,20 @@ export default function MasterPage() {
       </section>
 
       <section className="cms-dashboard-modules">
-        <button className="cms-dashboard-module-card" onClick={() => router.push('/master/relatorios')}>
+        <button
+          className="cms-dashboard-module-card"
+          onClick={() => router.push("/master/recuperacao")}
+        >
+          <strong>RECUPERAÇÃO ASSISTIDA</strong>
+          <p>
+            Compare backups e dados antigos antes de recuperar registros
+            individualmente.
+          </p>
+        </button>
+        <button
+          className="cms-dashboard-module-card"
+          onClick={() => router.push("/master/relatorios")}
+        >
           <div className="cms-dashboard-module-top">
             <span className="cms-dashboard-module-icon">▥</span>
             <span className="cms-dashboard-module-tag">ANÁLISE</span>
@@ -159,7 +176,10 @@ export default function MasterPage() {
           <div className="cms-dashboard-module-footer">Abrir módulo →</div>
         </button>
 
-        <button className="cms-dashboard-module-card" onClick={() => router.push('/master/cadastros')}>
+        <button
+          className="cms-dashboard-module-card"
+          onClick={() => router.push("/master/cadastros")}
+        >
           <div className="cms-dashboard-module-top">
             <span className="cms-dashboard-module-icon">＋</span>
             <span className="cms-dashboard-module-tag">ESTRUTURA</span>
@@ -172,19 +192,22 @@ export default function MasterPage() {
           <div className="cms-dashboard-module-footer">Abrir módulo →</div>
         </button>
 
-        <button className="cms-dashboard-module-card" onClick={() => router.push('/master/configuracoes')}>
+        <button
+          className="cms-dashboard-module-card"
+          onClick={() => router.push("/master/configuracoes")}
+        >
           <div className="cms-dashboard-module-top">
             <span className="cms-dashboard-module-icon">⚙</span>
             <span className="cms-dashboard-module-tag">SISTEMA</span>
           </div>
           <strong>CONFIGURAÇÕES</strong>
           <p>
-            Ajuste numeração de fichas, segurança do administrador e preferências
-            gerais do Controle Delta Vet.
+            Ajuste numeração de fichas, segurança do administrador e
+            preferências gerais do Controle Delta Vet.
           </p>
           <div className="cms-dashboard-module-footer">Abrir módulo →</div>
         </button>
       </section>
     </main>
-  )
+  );
 }

@@ -1,18 +1,31 @@
 {
   "name": "controle-delta-vet",
-  "version": "1.17.6",
+  "version": "1.19.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
-    "db:init": "node scripts/db-init.mjs"
+    "db:init": "node scripts/db-init.mjs",
+    "db:migrate": "node scripts/db-migrate.mjs",
+    "test": "bash tests/run.sh",
+    "test:db": "bash tests/run.sh --database-only"
   },
   "dependencies": {
-    "next": "14.2.31",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
     "@neondatabase/serverless": "^1.0.1",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "next": "16.4.6",
+    "pg": "8.23.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.58.2",
+    "@sparticuz/chromium": "143.0.4",
+    "embedded-postgres": "17.12.0-beta.19",
+    "prettier": "3.8.3"
+  },
+  "engines": {
+    "node": ">=20.9.0"
   }
 }
