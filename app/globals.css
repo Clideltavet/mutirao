@@ -486,7 +486,7 @@
   display: grid;
   grid-template-columns: 200px 200px 1fr;
   gap: 12px;
-  align-items: flex-end;
+  align-items: end;
   background: #fff;
   border-radius: 14px;
   padding: 12px;
@@ -1252,7 +1252,7 @@
   display: grid;
   grid-template-columns: 190px 190px auto 1fr;
   gap: 10px;
-  align-items: flex-end;
+  align-items: end;
   padding: 12px;
   margin-bottom: 10px;
   border-radius: 14px;
@@ -2036,7 +2036,7 @@
 .cms-dashboard-section-head {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: end;
   margin: 10px 0 14px;
 }
 
@@ -2558,7 +2558,7 @@
   display: grid;
   grid-template-columns: 1.5fr .7fr auto;
   gap: 10px;
-  align-items: flex-end;
+  align-items: end;
 }
 
 .procedure-value-add-grid label {
@@ -2638,7 +2638,7 @@
   display: grid;
   grid-template-columns: minmax(280px,1fr) 150px 150px auto auto auto;
   gap: 8px;
-  align-items: flex-end;
+  align-items: end;
   padding: 12px;
   margin-bottom: 10px;
   border-radius: 14px;
@@ -3811,3 +3811,4 @@
     justify-content: space-between;
   }
 }
+\n\n/* ===== v1.17.6 - ajustes solicitados pela cliente ===== */\n.report-observations-cell {\n  min-width: 230px;\n  max-width: 360px;\n  vertical-align: top !important;\n}\n\n.report-note-line {\n  margin-bottom: 4px;\n  color: #43596a;\n  font-size: 10px;\n  line-height: 1.35;\n}\n\n.report-note-empty {\n  color: #98a4ad;\n  font-size: 10px;\n  font-style: italic;\n}\n\n.report-change-summary {\n  width: fit-content;\n  margin-top: 6px;\n  padding: 4px 7px;\n  border-radius: 999px;\n  background: #edf4f8;\n  color: #315a7b;\n  font-size: 9px;\n  font-weight: 900;\n}\n\n.report-row-actions {\n  display: grid;\n  gap: 6px;\n  min-width: 104px;\n}\n\n.record-delete-test-inline {\n  min-height: 30px;\n  border: 1px solid #efb5ba;\n  border-radius: 7px;\n  background: #fff0f1;\n  color: #a52832;\n  padding: 0 8px;\n  font-size: 8px;\n  font-weight: 900;\n}\n\n.record-delete-test-inline:hover {\n  background: #fbe0e3;\n}\n

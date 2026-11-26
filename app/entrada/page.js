@@ -1,10 +1,7 @@
 'use client'
 
-import { useEffect, useMemo, useState, useRef } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { acceptSequence } from '../../components/sequenceState'
-import SyncStatus from '../../components/SyncStatus'
-import { patientRecordKey } from '../../components/syncUtils'
 import PhoneInput from '../../components/PhoneInput'
 import ClientModal from '../../components/ClientModal'
 import { buildClientsFromPatients, readClients, saveClients } from '../../components/clientUtils'
@@ -19,11 +16,7 @@ function getCurrentPatientNumber() {
 
 export default function EntradaPage() {
   const router = useRouter()
-  const [saving, setSaving] = useState(false)
-  const [pending, setPending] = useState(null)
-  const submitting = useRef(false)
   const [patientNumber, setPatientNumber] = useState(1)
-  const previousNumber = useRef(1)
   const [patientName, setPatientName] = useState('')
   const [species, setSpecies] = useState('')
   const [sex, setSex] = useState('')
@@ -44,9 +37,22 @@ export default function EntradaPage() {
   const [selectedClientId, setSelectedClientId] = useState('')
   const [showClientModal, setShowClientModal] = useState(false)
   const [procedureOptions, setProcedureOptions] = useState([])
+  const [savingPatient, setSavingPatient] = useState(false)
 
   useEffect(() => {
     setPatientNumber(getCurrentPatientNumber())
+
+    fetch('/api/patients/entry', { cache: 'no-store' })
+      .then(async response => {
+        const data = await response.json().catch(() => ({}))
+        if (!response.ok) throw new Error(data.error || 'Falha ao carregar sequência.')
+        const number = Math.max(1, Number(data.nextPatientNumber) || 1)
+        const revision = Math.max(0, Number(data.revision) || 0)
+        localStorage.setItem('deltaVetNextPatientNumber', String(number))
+        localStorage.setItem('deltaVetSequenceRevision', String(revision))
+        setPatientNumber(number)
+      })
+      .catch(() => {})
 
     try {
       let currentClients = readClients()
@@ -66,32 +72,34 @@ export default function EntradaPage() {
       setPatientNumber(synced)
     }
 
-    const applySequenceUpdate = () => setPatientNumber(getCurrentPatientNumber())
-    const restore = Object.keys(localStorage).filter(k => k.startsWith('deltaVetPendingEntry:')).map(k => {
-      try { return JSON.parse(localStorage.getItem(k)) } catch { return null }
-    }).find(Boolean)
-    if (restore) {
-      setPending(restore)
-      setMessage('Existe uma entrada aguardando confirmação. Clique em RETOMAR ENVIO antes de cadastrar outro paciente.')
+    const applySequenceUpdate = event => {
+      const number = Math.max(
+        1,
+        Number(event.detail?.nextPatientNumber) || getCurrentPatientNumber()
+      )
+
+      localStorage.setItem('deltaVetNextPatientNumber', String(number))
+      setPatientNumber(number)
+
+      // Se Caixa estava usando o número automático anterior,
+      // acompanha a nova ficha. Se foi editada manualmente, preserva.
+      setLocationNumber(current => {
+        if (location !== 'Caixa') return current
+        if (!current || current === String(patientNumber).padStart(3,'0')) {
+          return String(number).padStart(3,'0')
+        }
+        return current
+      })
     }
-    const onStorage = e => { if (e.key === 'deltaVetSequenceState') refreshNumberFromSync() }
-    window.addEventListener('storage', onStorage)
 
     window.addEventListener('deltaVetRemoteSync', refreshNumberFromSync)
     window.addEventListener('deltaVetSequenceUpdated', applySequenceUpdate)
 
     return () => {
-      window.removeEventListener('storage', onStorage)
       window.removeEventListener('deltaVetRemoteSync', refreshNumberFromSync)
       window.removeEventListener('deltaVetSequenceUpdated', applySequenceUpdate)
     }
   }, [])
-
-  useEffect(() => {
-    const previous = previousNumber.current
-    if (location === 'Caixa') setLocationNumber(current => current === String(previous).padStart(3,'0') ? String(patientNumber).padStart(3,'0') : current)
-    previousNumber.current = patientNumber
-  }, [patientNumber, location])
 
   const formattedNumber = useMemo(
     () => String(patientNumber).padStart(3, '0'),
@@ -163,8 +171,8 @@ export default function EntradaPage() {
 
   async function submitPatient(e) {
     e.preventDefault()
-    if (submitting.current) return
-    if (pending) return sendEntry(pending)
+
+    if (savingPatient) return
 
     if (!species || !sex || !location || !tutorName.trim()) {
       setMessage('Preencha espécie, sexo, tutor e local internado.')
@@ -172,15 +180,19 @@ export default function EntradaPage() {
     }
 
     if (location === 'Caixa' && !locationNumber.trim()) {
-      setMessage('O número da Caixa é preenchido automaticamente pela ficha.')
+      setMessage('Informe o número da Caixa.')
       return
     }
 
+    setSavingPatient(true)
+    setMessage('Salvando paciente e reservando a ficha no Neon...')
+
     const createdAt = new Date().toISOString()
     const actor = getCurrentActor()
+    const tempId = globalThis.crypto?.randomUUID?.() || `patient-${Date.now()}-${Math.random().toString(36).slice(2,8)}`
 
-    const patient = {
-      id: crypto.randomUUID(),
+    const draftPatient = {
+      id: tempId,
       number: patientNumber,
       patientName: patientName.trim(),
       species,
@@ -220,36 +232,46 @@ export default function EntradaPage() {
       ],
     }
 
-    const request = { patient, autoLocation: location === 'Caixa' && locationNumber === formattedNumber }
     try {
-      localStorage.setItem(`deltaVetPendingEntry:${patient.id}`, JSON.stringify(request))
-      setPending(request)
-    } catch {
-      setMessage('Não foi possível guardar a entrada neste aparelho. Libere espaço antes de enviar.')
-      return
-    }
-    await sendEntry(request)
-  }
-
-  async function sendEntry(request) {
-    if (submitting.current) return
-    submitting.current = true
-    setSaving(true)
-    setMessage('Confirmando paciente e ficha no Neon...')
-    try {
-      const response = await fetch('/api/patients', {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(request), signal: AbortSignal.timeout(20000),
+      const response = await fetch('/api/patients/entry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ patient: draftPatient }),
       })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Falha ao confirmar entrada.')
+
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data.error || 'Não foi possível salvar o paciente no Neon.')
+      }
+
+      const savedPatient = data.patient
+      const assignedNumber = Math.max(1, Number(data.assignedNumber) || patientNumber)
+      const nextNumber = Math.max(assignedNumber + 1, Number(data.nextPatientNumber) || assignedNumber + 1)
+      const revision = Math.max(0, Number(data.sequenceRevision) || 0)
+
+      // Atualiza o cache local somente depois da confirmação atômica do servidor.
       const stored = JSON.parse(localStorage.getItem('deltaVetPatients') || '[]')
-      const exists = stored.some(p => patientRecordKey(p) === data.patient.id)
-      if (!exists) stored.push(data.patient)
-      localStorage.setItem('deltaVetPatients', JSON.stringify(stored))
-      setPatientNumber(acceptSequence(data))
-      localStorage.removeItem(`deltaVetPendingEntry:${request.patient.id}`)
-      setPending(null)
+      const withoutSameId = stored.filter(item => item.id !== savedPatient.id)
+      localStorage.setItem('deltaVetPatients', JSON.stringify([...withoutSameId, savedPatient]))
+
+      localStorage.setItem('deltaVetNextPatientNumber', String(nextNumber))
+      localStorage.setItem('deltaVetSequenceRevision', String(revision))
+      if (data.sequenceUpdatedAt) {
+        localStorage.setItem('deltaVetSequenceUpdatedAt', String(data.sequenceUpdatedAt))
+      }
+
+      // A tela já mostra a próxima ficha imediatamente. Não espera o sincronizador.
+      setPatientNumber(nextNumber)
+
+      auditAction({
+        action: 'ENTRADA_CRIADA',
+        category: 'PACIENTE',
+        patient: savedPatient,
+        actor,
+        at: createdAt,
+        details: `Entrada cadastrada • ${savedPatient.location || '-'} ${savedPatient.locationNumber || ''} • ${(savedPatient.procedures || []).join(' / ') || 'Sem procedimento'}`,
+      })
+
       setPatientName('')
       setSpecies('')
       setSex('')
@@ -261,13 +283,17 @@ export default function EntradaPage() {
       setProcedure3('')
       setProcedure4('')
       setNotes('')
-      setMessage(`Paciente nº ${String(data.patient.number).padStart(3,'0')} salvo no Neon com sucesso.`)
+      setMessage(`Paciente nº ${String(assignedNumber).padStart(3,'0')} enviado com sucesso. Próxima ficha: ${String(nextNumber).padStart(3,'0')}.`)
+
+      // Atualiza as outras telas/aparelhos sem permitir regressão da sequência.
+      window.dispatchEvent(new CustomEvent('deltaVetSequenceUpdated', {
+        detail: { nextPatientNumber: nextNumber, sequenceRevision: revision }
+      }))
       window.dispatchEvent(new CustomEvent('deltaVetManualSyncRequest'))
     } catch (error) {
-      setMessage(`${navigator.onLine ? error.message : 'Sem internet / modo local.'} Entrada preservada neste aparelho; retome o envio para confirmar a ficha.`)
+      setMessage(error.message || 'Erro ao salvar paciente. A ficha não foi consumida.')
     } finally {
-      submitting.current = false
-      setSaving(false)
+      setSavingPatient(false)
     }
   }
 
@@ -280,9 +306,6 @@ export default function EntradaPage() {
         </header>
 
         <h1 className="form-title">CADASTRO DE ENTRADA</h1>
-        <SyncStatus />
-        {pending && <div className="inline-message">Entrada pendente: {pending.patient.patientName || "Sem nome"} • Tutor: {pending.patient.tutorName}. A ficha será confirmada pelo servidor.</div>}
-        <fieldset disabled={saving || !!pending} style={{border:0, padding:0, margin:0, minWidth:0}}>
 
         <div className="patient-name-row">
           <label className="field-group">
@@ -445,12 +468,11 @@ export default function EntradaPage() {
           <textarea className="field-input notes-input" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Digite alguma observação importante..." />
         </label>
 
-        </fieldset>
         {message && <div className="inline-message">{message}</div>}
 
         <div className="form-actions">
           <button type="button" className="secondary-button" onClick={() => router.push('/')}>VOLTAR</button>
-          <button type="submit" className="primary-button" disabled={saving}>{saving ? 'CONFIRMANDO...' : pending ? 'RETOMAR ENVIO' : 'ENVIAR'}</button>
+          <button type="submit" className="primary-button" disabled={savingPatient}>{savingPatient ? 'SALVANDO...' : 'ENVIAR'}</button>
         </div>
       </form>
 

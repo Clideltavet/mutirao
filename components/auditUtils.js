@@ -90,7 +90,9 @@ export function auditAction({
   const log = readAuditLog()
   log.push(entry)
 
-  localStorage.setItem('deltaVetAuditLog', JSON.stringify(log))
+  // Limite local para evitar crescimento sem fim durante os testes.
+  const limited = log.length > 10000 ? log.slice(log.length - 10000) : log
+  localStorage.setItem('deltaVetAuditLog', JSON.stringify(limited))
 
   return entry
 }

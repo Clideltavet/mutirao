@@ -44,6 +44,29 @@ function statusLabel(patient) {
   return 'Aguardando procedimento'
 }
 
+function observationsAndChanges(patient) {
+  const notes = [
+    patient.notes ? `Entrada: ${patient.notes}` : '',
+    patient.surgeryNotes ? `Procedimento: ${patient.surgeryNotes}` : '',
+    patient.dischargeNotes ? `Alta: ${patient.dischargeNotes}` : '',
+    patient.deliveryNotes ? `Entrega: ${patient.deliveryNotes}` : '',
+  ].filter(Boolean)
+
+  const changes = (Array.isArray(patient.timeline) ? patient.timeline : [])
+    .filter(event => event?.type && event.type !== 'ENTRADA_CRIADA')
+    .map(event => {
+      const label = AUDIT_LABELS[event.type] || event.type
+      const actor = event.actor?.name ? ` por ${event.actor.name}` : ''
+      return `${label}${actor}`
+    })
+
+  return {
+    notes,
+    changes,
+    text: [...notes, ...changes].join(' | ') || '-',
+  }
+}
+
 function downloadCsv(rows, filename) {
   const escape = value => `"${String(value ?? '').replaceAll('"','""')}"`
   const csv = rows.map(row => row.map(escape).join(';')).join('\n')
@@ -98,11 +121,13 @@ export default function ReportsPage() {
         patient.patientName,
         patient.tutorName,
         patient.phone,
-        patient.species,
-        patient.veterinarian,
-        patient.dischargeVeterinarian,
         patient.tutorCpf,
         patient.tutorEmail,
+        patient.notes,
+        patient.surgeryNotes,
+        patient.dischargeNotes,
+        patient.deliveryNotes,
+        observationsAndChanges(patient).text,
         ...(patient.procedures || []),
       ].join(' ').toLowerCase().includes(q)
     )
@@ -243,12 +268,14 @@ export default function ReportsPage() {
     setAuditLog(readAuditLog())
     setSelected(null)
 
-    window.alert('Registro de teste removido. A exclusão será sincronizada com o Neon.')
+    window.dispatchEvent(new CustomEvent('deltaVetManualSyncRequest'))
+
+    window.alert('Registro de teste removido. Ele já saiu dos totais e do financeiro; a exclusão está sendo sincronizada com o Neon.')
   }
 
   function exportCurrent() {
     const rows = [
-      ['Ficha','Paciente','Data','Tutor','Espécie','Sexo','Procedimentos','Valor','Veterinário','Status'],
+      ['Ficha','Paciente','Data','Tutor','Espécie','Sexo','Procedimentos','Observações / Alterações','Valor','Veterinário','Status'],
       ...filtered.map(p => [
         String(p.number || '').padStart(3,'0'),
         p.patientName || '',
@@ -257,6 +284,7 @@ export default function ReportsPage() {
         p.species || '',
         p.sex || '',
         (p.procedures || []).join(' | '),
+        observationsAndChanges(p).text,
         patientTotalValue(p, catalog).toFixed(2).replace('.',','),
         p.veterinarian || '',
         statusLabel(p),
@@ -392,6 +420,7 @@ export default function ReportsPage() {
                   <th>Data</th>
                   <th>Tutor</th>
                   <th>Procedimentos</th>
+                  <th>Observações / Alterações</th>
                   <th>Valor</th>
                   <th>Status</th>
                   <th>Ação</th>
@@ -405,15 +434,42 @@ export default function ReportsPage() {
                     <td>{displayDate(patient.createdAt)}</td>
                     <td>{patient.tutorName || '-'}</td>
                     <td>{(patient.procedures || []).join(', ') || '-'}</td>
+                    <td className="report-observations-cell">
+                      {(() => {
+                        const info = observationsAndChanges(patient)
+                        return (
+                          <>
+                            {info.notes.length ? info.notes.map((item, index) => (
+                              <div className="report-note-line" key={`note-${index}`}>{item}</div>
+                            )) : <div className="report-note-empty">Sem observações</div>}
+                            {info.changes.length > 0 && (
+                              <div className="report-change-summary">
+                                {info.changes.length} alteração(ões) registrada(s)
+                              </div>
+                            )}
+                          </>
+                        )
+                      })()}
+                    </td>
                     <td><strong>{currencyBRL(patientTotalValue(patient, catalog))}</strong></td>
                     <td>{statusLabel(patient)}</td>
                     <td>
-                      <button className="record-open-button" onClick={() => setSelected(patient)}>
-                        VER FICHA
-                      </button>
+                      <div className="report-row-actions">
+                        <button className="record-open-button" onClick={() => setSelected(patient)}>
+                          VER FICHA
+                        </button>
+                        {currentAdmin?.roleId === 'admin' && (
+                          <button
+                            className="record-delete-test-inline"
+                            onClick={() => deleteTestPatient(patient)}
+                          >
+                            EXCLUIR TESTE
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
-                )) : <tr><td colSpan="8">Nenhum registro encontrado.</td></tr>}
+                )) : <tr><td colSpan="9">Nenhum registro encontrado.</td></tr>}
               </tbody>
             </table>
           </div>

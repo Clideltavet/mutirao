@@ -1,5 +1,4 @@
 'use client'
-import { patientRecordKey } from '../../components/syncUtils'
 
 import { useEffect, useMemo, useState } from 'react'
 import DischargeModal from '../../components/DischargeModal'
@@ -108,14 +107,16 @@ export default function CirurgiaPage() {
   }, [patients, dayKey])
 
   const surgeryPatients = useMemo(
-    () => todayPatients.filter((patient) => patient.status !== 'CONFIRMADO'),
+    () => todayPatients
+      .filter((patient) => patient.status !== 'CONFIRMADO')
+      .sort((a,b) => Number(a.number || 0) - Number(b.number || 0)),
     [todayPatients]
   )
 
   const releasePatients = useMemo(
-    () => todayPatients.filter(
-      (patient) => patient.status === 'CONFIRMADO' && !patient.dischargeStatus
-    ),
+    () => todayPatients
+      .filter((patient) => patient.status === 'CONFIRMADO' && !patient.dischargeStatus)
+      .sort((a,b) => Number(a.number || 0) - Number(b.number || 0)),
     [todayPatients]
   )
 
@@ -154,7 +155,7 @@ export default function CirurgiaPage() {
       type: 'TV',
     }
     const updated = readPatients().map((patient) =>
-      patientRecordKey(patient) === patientRecordKey(selectedPatient)
+      Number(patient.number) === Number(selectedPatient.number)
         ? {
             ...patient,
             surgeryExtras: selectedExtras,
@@ -178,7 +179,7 @@ export default function CirurgiaPage() {
     )
     localStorage.setItem('deltaVetPatients', JSON.stringify(updated))
 
-    const savedPatient = updated.find(patient => patientRecordKey(patient) === patientRecordKey(selectedPatient))
+    const savedPatient = updated.find(patient => Number(patient.number) === Number(selectedPatient.number))
     auditAction({
       action: 'CIRURGIA_CONFIRMADA',
       category: 'CIRURGIA',

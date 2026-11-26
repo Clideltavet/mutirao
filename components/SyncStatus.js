@@ -13,7 +13,6 @@ function formatTime(value) {
 
 export default function SyncStatus({ compact = false }) {
   const [last, setLast] = useState(null)
-  const [pending, setPending] = useState(0)
   const [online, setOnline] = useState(true)
   const [syncing, setSyncing] = useState(false)
   const [message, setMessage] = useState('')
@@ -26,9 +25,6 @@ export default function SyncStatus({ compact = false }) {
     }
 
     const onState = event => {
-      // Polling stays silent after the first confirmed connection. Keep any
-      // error visible until a request actually succeeds.
-      if (event.detail?.syncing && !event.detail?.manual && localStorage.getItem('deltaVetLastNeonSync')) return
       setSyncing(!!event.detail?.syncing)
       if (event.detail?.syncing) {
         setError(false)
@@ -38,13 +34,11 @@ export default function SyncStatus({ compact = false }) {
 
     const onResult = event => {
       const detail = event.detail || {}
-      if (detail.busy) return
       setSyncing(false)
       if (detail.ok) {
         setError(false)
-        setPending(detail.pendingCount || 0)
         setLast(detail.syncedAt || localStorage.getItem('deltaVetLastNeonSync'))
-        setMessage(detail.pendingCount ? `${detail.pendingCount} pendência(s) local(is). Retome entradas pendentes ou entre com a permissão necessária para enviá-las.` : `Sincronizado com sucesso${detail.counts ? ` • ${detail.counts.patients} paciente(s)` : ''}`)
+        setMessage(`Sincronizado com sucesso${detail.counts ? ` • ${detail.counts.patients} paciente(s)` : ''}`)
       } else if (!detail.busy) {
         setError(true)
         setMessage(detail.error || 'Erro ao sincronizar com o Neon.')
@@ -111,11 +105,11 @@ export default function SyncStatus({ compact = false }) {
           <div>
             <span className="delta-sync-feedback-dot" />
             <strong>
-              {!online ? 'Sem internet / modo local' : syncing ? 'Sincronizando...' : error ? 'Falha na sincronização' : pending ? 'Neon conectado • pendências locais' : last ? 'Neon sincronizado' : 'Aguardando sincronização'}
+              {!online ? 'Modo local' : error ? 'Falha na sincronização' : last ? 'Neon sincronizado' : 'Aguardando sincronização'}
             </strong>
           </div>
           <small>
-            {message || 'Sincronização automática ativa.'}{last ? ` • Última confirmação: ${formatTime(last)}` : ''}
+            {message ? message : last ? `Última confirmação: ${formatTime(last)}` : 'Clique no botão para confirmar o envio dos dados.'}
           </small>
         </div>
       )}

@@ -142,6 +142,211 @@ await sql`
   ON shared_tombstones(kind)
 `
 
+
+await sql`
+  CREATE OR REPLACE FUNCTION delta_vet_get_next_patient_number()
+  RETURNS TABLE (
+    next_number INTEGER,
+    sequence_revision BIGINT,
+    sequence_updated_at TIMESTAMPTZ
+  )
+  LANGUAGE plpgsql
+  AS $$
+  DECLARE
+    v_state JSONB;
+    v_current INTEGER;
+    v_original INTEGER;
+    v_epoch TIMESTAMPTZ;
+    v_revision BIGINT;
+    v_updated_at TIMESTAMPTZ;
+  BEGIN
+    INSERT INTO system_state (key, value, updated_at)
+    VALUES (
+      'nextPatientNumber',
+      jsonb_build_object(
+        'value', 1,
+        'epoch', NOW(),
+        'source', 'automatic',
+        'revision', 1
+      ),
+      NOW()
+    )
+    ON CONFLICT (key) DO NOTHING;
+
+    SELECT value, updated_at
+    INTO v_state, v_updated_at
+    FROM system_state
+    WHERE key = 'nextPatientNumber'
+    FOR UPDATE;
+
+    v_current := GREATEST(COALESCE((v_state->>'value')::INTEGER, 1), 1);
+    v_original := v_current;
+    v_epoch := COALESCE(
+      NULLIF(v_state->>'epoch', '')::TIMESTAMPTZ,
+      v_updated_at,
+      TIMESTAMPTZ '1970-01-01 00:00:00+00'
+    );
+    v_revision := GREATEST(COALESCE((v_state->>'revision')::BIGINT, 0), 0);
+
+    WHILE EXISTS (
+      SELECT 1
+      FROM shared_records
+      WHERE kind = 'patients'
+        AND (payload->>'number') ~ '^[0-9]+$'
+        AND (payload->>'number')::INTEGER = v_current
+        AND COALESCE(
+          NULLIF(payload->>'createdAt', '')::TIMESTAMPTZ,
+          server_updated_at
+        ) >= v_epoch
+    ) LOOP
+      v_current := v_current + 1;
+    END LOOP;
+
+    IF v_current <> v_original THEN
+      v_revision := v_revision + 1;
+      v_updated_at := NOW();
+
+      UPDATE system_state
+      SET
+        value = (
+          COALESCE(value, '{}'::jsonb)
+          || jsonb_build_object(
+            'value', v_current,
+            'epoch', v_epoch,
+            'source', 'normalize',
+            'revision', v_revision
+          )
+        ),
+        updated_at = v_updated_at
+      WHERE key = 'nextPatientNumber';
+    END IF;
+
+    RETURN QUERY SELECT v_current, v_revision, v_updated_at;
+  END;
+  $$
+`
+
+await sql`
+  CREATE OR REPLACE FUNCTION delta_vet_create_patient(
+    p_payload JSONB
+  )
+  RETURNS TABLE (
+    patient JSONB,
+    assigned_number INTEGER,
+    next_number INTEGER,
+    sequence_revision BIGINT,
+    sequence_updated_at TIMESTAMPTZ
+  )
+  LANGUAGE plpgsql
+  AS $$
+  DECLARE
+    v_state JSONB;
+    v_current INTEGER;
+    v_epoch TIMESTAMPTZ;
+    v_revision BIGINT;
+    v_patient JSONB;
+    v_record_key TEXT;
+    v_updated_at TIMESTAMPTZ;
+  BEGIN
+    INSERT INTO system_state (key, value, updated_at)
+    VALUES (
+      'nextPatientNumber',
+      jsonb_build_object(
+        'value', 1,
+        'epoch', NOW(),
+        'source', 'automatic',
+        'revision', 1
+      ),
+      NOW()
+    )
+    ON CONFLICT (key) DO NOTHING;
+
+    SELECT value, updated_at
+    INTO v_state, v_updated_at
+    FROM system_state
+    WHERE key = 'nextPatientNumber'
+    FOR UPDATE;
+
+    v_current := GREATEST(COALESCE((v_state->>'value')::INTEGER, 1), 1);
+    v_epoch := COALESCE(
+      NULLIF(v_state->>'epoch', '')::TIMESTAMPTZ,
+      v_updated_at,
+      TIMESTAMPTZ '1970-01-01 00:00:00+00'
+    );
+    v_revision := GREATEST(COALESCE((v_state->>'revision')::BIGINT, 0), 0);
+
+    -- Compatibilidade com registros criados antes desta correção:
+    -- se a ficha atual já foi utilizada na sequência vigente, avança até a primeira livre.
+    WHILE EXISTS (
+      SELECT 1
+      FROM shared_records
+      WHERE kind = 'patients'
+        AND (payload->>'number') ~ '^[0-9]+$'
+        AND (payload->>'number')::INTEGER = v_current
+        AND COALESCE(
+          NULLIF(payload->>'createdAt', '')::TIMESTAMPTZ,
+          server_updated_at
+        ) >= v_epoch
+    ) LOOP
+      v_current := v_current + 1;
+    END LOOP;
+
+    v_patient := jsonb_set(p_payload, '{number}', to_jsonb(v_current), TRUE);
+    v_patient := jsonb_set(v_patient, '{_syncUpdatedAt}', to_jsonb(NOW()::TEXT), TRUE);
+
+    v_record_key := COALESCE(
+      NULLIF(v_patient->>'id', ''),
+      v_current::TEXT || '::' || COALESCE(v_patient->>'createdAt', NOW()::TEXT)
+    );
+
+    INSERT INTO shared_records (
+      kind,
+      record_key,
+      payload,
+      version_time,
+      server_updated_at
+    )
+    VALUES (
+      'patients',
+      v_record_key,
+      v_patient,
+      NOW(),
+      NOW()
+    )
+    ON CONFLICT (kind, record_key)
+    DO UPDATE SET
+      payload = EXCLUDED.payload,
+      version_time = EXCLUDED.version_time,
+      server_updated_at = NOW();
+
+    v_revision := v_revision + 1;
+    v_updated_at := NOW();
+
+    UPDATE system_state
+    SET
+      value = (
+        COALESCE(value, '{}'::jsonb)
+        || jsonb_build_object(
+          'value', v_current + 1,
+          'epoch', v_epoch,
+          'source', 'entry',
+          'revision', v_revision
+        )
+      ),
+      updated_at = v_updated_at
+    WHERE key = 'nextPatientNumber';
+
+    RETURN QUERY
+    SELECT
+      v_patient,
+      v_current,
+      v_current + 1,
+      v_revision,
+      v_updated_at;
+  END;
+  $$
+`
+
 for (const role of roles) {
   await sql`
     INSERT INTO roles (id, name, description, accesses)
@@ -187,6 +392,3 @@ console.log(`✅ Admin criado/atualizado: ${adminUser}`)
 console.log('✅ Senha do admin veio de ADMIN_PASSWORD.')
 console.log('')
 console.log('Agora rode: npm run dev')
-
-// Fresh installations also receive the atomic sync functions.
-await import('./db-migrate.mjs')

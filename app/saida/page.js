@@ -1,5 +1,4 @@
 'use client'
-import { patientRecordKey, patientRouteId } from '../../components/syncUtils'
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -85,7 +84,7 @@ export default function SaidaPage() {
     const timelineEvent = { ...event, actor }
 
     const updated = all.map(p =>
-      patientRecordKey(p) === number
+      Number(p.number) === Number(number)
         ? {
             ...p,
             ...patch,
@@ -100,7 +99,7 @@ export default function SaidaPage() {
 
     localStorage.setItem('deltaVetPatients', JSON.stringify(updated))
 
-    const savedPatient = updated.find(p => patientRecordKey(p) === number)
+    const savedPatient = updated.find(p => Number(p.number) === Number(number))
     const detailsMap = {
       ENTREGUE: `Entrega confirmada${event.notes ? ` • ${event.notes}` : ''}`,
       ALTA_CANCELADA: `Alta cancelada e paciente retornou ao pós-operatório${event.notes ? ` • ${event.notes}` : ''}`,
@@ -131,7 +130,7 @@ export default function SaidaPage() {
     const at = new Date().toISOString()
 
     persistPatch(
-      patientRecordKey(selected),
+      selected.number,
       {
         dischargeStatus: 'ENTREGUE',
         deliveredAt: at,
@@ -155,7 +154,7 @@ export default function SaidaPage() {
     const at = new Date().toISOString()
 
     persistPatch(
-      patientRecordKey(selected),
+      selected.number,
       {
         dischargeStatus: null,
         dischargedAt: null,
@@ -183,7 +182,7 @@ export default function SaidaPage() {
     const at = new Date().toISOString()
 
     persistPatch(
-      patientRecordKey(selected),
+      selected.number,
       {
         dischargeStatus: null,
         deliveredAt: null,
@@ -316,7 +315,7 @@ export default function SaidaPage() {
             </div>
 
             <div className="exit-detail-actions">
-              <button className="modal-secondary" onClick={() => router.push(`/pacientes/${patientRouteId(selected)}/editar`)}>
+              <button className="modal-secondary" onClick={() => router.push(`/pacientes/${selected.number}/editar`)}>
                 EDITAR PACIENTE
               </button>
 

@@ -1,5 +1,4 @@
 'use client'
-import { patientRouteId } from '../../components/syncUtils'
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -37,6 +36,18 @@ function fTime(iso) {
   return Number.isNaN(d.getTime()) ? '-' : d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})
 }
 
+function flowOrder(patient) {
+  // Aguardando cirurgia fica primeiro.
+  // Assim que a cirurgia é confirmada, a ficha vai para o bloco final.
+  // Dentro de cada bloco a ordenação continua numérica.
+  return patient.status === 'CONFIRMADO' ? 1 : 0
+}
+
+function patientNumber(patient) {
+  const value = Number(patient?.number)
+  return Number.isFinite(value) ? value : Number.MAX_SAFE_INTEGER
+}
+
 export default function PacientesPage() {
   const router = useRouter()
   const [patients, setPatients] = useState([])
@@ -60,7 +71,13 @@ export default function PacientesPage() {
   }, [])
 
   const todayPatients = useMemo(
-    () => patients.filter((p) => localDateKey(p.createdAt) === dayKey),
+    () => patients
+      .filter((p) => localDateKey(p.createdAt) === dayKey)
+      .sort((a, b) => {
+        const groupDiff = flowOrder(a) - flowOrder(b)
+        if (groupDiff !== 0) return groupDiff
+        return patientNumber(a) - patientNumber(b)
+      }),
     [patients, dayKey]
   )
 
@@ -117,7 +134,7 @@ export default function PacientesPage() {
               <tr
                 key={`${p.number}-${p.createdAt}`}
                 className="tablet-patient-row"
-                onClick={() => router.push(`/pacientes/${patientRouteId(p)}`)}
+                onClick={() => router.push(`/pacientes/${p.number}`)}
               >
                 <td>{fTime(p.createdAt)}</td>
                 <td>{fDate(p.createdAt)}</td>
@@ -168,7 +185,7 @@ export default function PacientesPage() {
                   ) : (
                     <button
                       className="patient-open-button"
-                      onClick={() => router.push(`/pacientes/${patientRouteId(p)}`)}
+                      onClick={() => router.push(`/pacientes/${p.number}`)}
                     >
                       ABRIR
                     </button>
